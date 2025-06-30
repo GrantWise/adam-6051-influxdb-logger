@@ -1,0 +1,41 @@
+{
+    "modbus": {
+        "host": "192.168.1.100",
+        "port": 502,
+        "unit_id": 1,
+        "timeout": 3,
+        "retry_on_empty": true,
+        "retry_on_invalid": true,
+        "retries": 3,
+        "retry_delay": 1.0
+    },
+    "influxdb": {
+        "host": "localhost",
+        "port": 8086,
+        "username": "",
+        "password": "",
+        "database": "adam_counters",
+        "ssl": false,
+        "verify_ssl": false,
+        "timeout": 5,
+        "retries": 3
+    },
+    "logging": {
+        "poll_interval": 5.0,
+        "log_level": "INFO",
+        "log_file": "adam_logger.log",
+        "max_log_size": "10MB",
+        "backup_count": 5
+    },
+    "counters": {
+        "channels": [0, 1],
+        "calculate_rate": true,
+        "rate_window": 60,
+        "overflow_threshold": 4294967000
+    },
+    "device": {
+        "name": "ADAM-6051",
+        "location": "production_line_1",
+        "description": "Counter monitoring device for production line 1"
+    }
+}
