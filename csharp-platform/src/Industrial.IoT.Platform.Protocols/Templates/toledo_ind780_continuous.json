@@ -1,0 +1,78 @@
+{
+  "templateId": "toledo_ind780_continuous",
+  "name": "Toledo IND780 Continuous Output",
+  "description": "Toledo IND780 terminal continuous output format",
+  "delimiter": "\r\n",
+  "encoding": "ASCII",
+  "fields": [
+    {
+      "name": "gross_net",
+      "start": 0,
+      "length": 1,
+      "fieldType": "lookup",
+      "decimalPlaces": null,
+      "lookupValues": {
+        "G": "gross",
+        "N": "net"
+      },
+      "validationPattern": null,
+      "isRequired": true,
+      "description": "Gross or Net weight indicator"
+    },
+    {
+      "name": "motion",
+      "start": 1,
+      "length": 1,
+      "fieldType": "lookup",
+      "decimalPlaces": null,
+      "lookupValues": {
+        " ": "stable",
+        "M": "motion"
+      },
+      "validationPattern": null,
+      "isRequired": true,
+      "description": "Motion indicator"
+    },
+    {
+      "name": "weight",
+      "start": 2,
+      "length": 8,
+      "fieldType": "numeric",
+      "decimalPlaces": 0,
+      "lookupValues": null,
+      "validationPattern": "^[\\s+-]?\\d+$",
+      "isRequired": true,
+      "description": "Weight value (integer)"
+    },
+    {
+      "name": "unit",
+      "start": 11,
+      "length": 2,
+      "fieldType": "lookup",
+      "decimalPlaces": null,
+      "lookupValues": {
+        "lb": "pounds",
+        "kg": "kilograms",
+        "oz": "ounces",
+        " g": "grams"
+      },
+      "validationPattern": null,
+      "isRequired": true,
+      "description": "Weight unit (2 characters)"
+    }
+  ],
+  "confidenceScore": 92.0,
+  "discoveryDate": "2025-07-01T19:00:00Z",
+  "manufacturer": "Toledo",
+  "modelPattern": "IND780|IND570|IND560",
+  "validationStats": {
+    "totalFrames": 60,
+    "successfulParses": 55,
+    "frameConsistency": 92.0,
+    "formatMatch": 92.0,
+    "dataQuality": 92.0,
+    "averageFrameLength": 13.0,
+    "frameLengthStdDev": 0.5,
+    "validationDuration": "00:00:00.9876543"
+  }
+}

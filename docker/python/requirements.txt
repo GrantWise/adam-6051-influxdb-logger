@@ -1,0 +1,21 @@
+# ADAM-6051 InfluxDB Logger Dependencies
+# For production use with industrial automation systems
+
+# Modbus TCP communication library
+pymodbus>=2.5.3,<4.0.0
+
+# InfluxDB 2.x client for time-series data storage
+influxdb-client>=1.45.0,<2.0.0
+
+# HTTP requests for health checks
+requests>=2.28.0,<3.0.0
+
+# Optional: Enhanced logging and monitoring
+# Uncomment if you need structured logging or metrics
+# structlog>=22.0.0
+# prometheus-client>=0.15.0
+
+# Development and testing dependencies (install with pip install -r requirements-dev.txt)
+# pytest>=7.0.0
+# pytest-cov>=4.0.0
+# mock>=4.0.0

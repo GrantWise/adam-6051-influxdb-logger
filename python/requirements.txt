@@ -1,0 +1,23 @@
+# ADAM Industrial Data Acquisition Platform Dependencies
+# For production use with industrial automation systems
+
+# Modbus TCP communication library (ADAM-6051)
+pymodbus>=2.5.3,<4.0.0
+
+# InfluxDB 2.x client for time-series data storage
+influxdb-client>=1.45.0,<2.0.0
+
+# PostgreSQL connectivity for discrete weight data (ADAM-4571)
+psycopg2-binary>=2.9.0
+
+# SQLite is built-in to Python (no additional dependency needed)
+
+# Optional: Enhanced logging and monitoring
+# Uncomment if you need structured logging or metrics
+# structlog>=22.0.0
+# prometheus-client>=0.15.0
+
+# Development and testing dependencies (install with pip install -r requirements-dev.txt)
+# pytest>=7.0.0
+# pytest-cov>=4.0.0
+# mock>=4.0.0

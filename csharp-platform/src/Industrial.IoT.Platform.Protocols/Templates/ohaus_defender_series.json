@@ -1,0 +1,65 @@
+{
+  "templateId": "ohaus_defender_series",
+  "name": "Ohaus Defender Series Protocol",
+  "description": "Ohaus Defender and similar scales with space-padded format",
+  "delimiter": "\r\n",
+  "encoding": "ASCII",
+  "fields": [
+    {
+      "name": "weight",
+      "start": 0,
+      "length": 8,
+      "fieldType": "numeric",
+      "decimalPlaces": 1,
+      "lookupValues": null,
+      "validationPattern": "^[\\s+-]?\\d*\\.?\\d+$",
+      "isRequired": true,
+      "description": "Weight value with 1 decimal place, right-aligned"
+    },
+    {
+      "name": "unit",
+      "start": 8,
+      "length": 2,
+      "fieldType": "lookup",
+      "decimalPlaces": null,
+      "lookupValues": {
+        " g": "grams",
+        "kg": "kilograms",
+        "lb": "pounds",
+        "oz": "ounces"
+      },
+      "validationPattern": null,
+      "isRequired": true,
+      "description": "Weight unit (2 characters)"
+    },
+    {
+      "name": "stability",
+      "start": 10,
+      "length": 1,
+      "fieldType": "lookup",
+      "decimalPlaces": null,
+      "lookupValues": {
+        " ": "stable",
+        "?": "unstable",
+        "S": "stable"
+      },
+      "validationPattern": null,
+      "isRequired": false,
+      "description": "Stability indicator at end of string"
+    }
+  ],
+  "confidenceScore": 90.0,
+  "discoveryDate": "2025-07-01T19:00:00Z",
+  "manufacturer": "Ohaus",
+  "modelPattern": "Defender|Ranger|Scout|Navigator",
+  "validationStats": {
+    "totalFrames": 50,
+    "successfulParses": 45,
+    "frameConsistency": 95.0,
+    "formatMatch": 90.0,
+    "dataQuality": 90.0,
+    "averageFrameLength": 11.0,
+    "frameLengthStdDev": 0.5,
+    "validationDuration": "00:00:00.8901234"
+  }
+}

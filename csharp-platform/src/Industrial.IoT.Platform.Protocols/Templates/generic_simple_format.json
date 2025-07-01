@@ -1,0 +1,54 @@
+{
+  "templateId": "generic_simple_format",
+  "name": "Generic Simple Format",
+  "description": "Generic simple weight format - weight followed by unit",
+  "delimiter": "\r\n",
+  "encoding": "ASCII",
+  "fields": [
+    {
+      "name": "weight",
+      "start": 0,
+      "length": 8,
+      "fieldType": "numeric",
+      "decimalPlaces": 2,
+      "lookupValues": null,
+      "validationPattern": "^[\\s+-]?\\d*\\.?\\d+$",
+      "isRequired": true,
+      "description": "Weight value with optional sign and decimal"
+    },
+    {
+      "name": "unit",
+      "start": 9,
+      "length": 3,
+      "fieldType": "lookup",
+      "decimalPlaces": null,
+      "lookupValues": {
+        "kg": "kilograms",
+        " kg": "kilograms",
+        "lb": "pounds",
+        " lb": "pounds",
+        "g": "grams",
+        " g": "grams",
+        "oz": "ounces",
+        " oz": "ounces"
+      },
+      "validationPattern": null,
+      "isRequired": false,
+      "description": "Weight unit (flexible format)"
+    }
+  ],
+  "confidenceScore": 70.0,
+  "discoveryDate": "2025-07-01T19:00:00Z",
+  "manufacturer": "Generic",
+  "modelPattern": ".*",
+  "validationStats": {
+    "totalFrames": 20,
+    "successfulParses": 14,
+    "frameConsistency": 70.0,
+    "formatMatch": 70.0,
+    "dataQuality": 70.0,
+    "averageFrameLength": 12.0,
+    "frameLengthStdDev": 2.0,
+    "validationDuration": "00:00:00.3456789"
+  }
+}

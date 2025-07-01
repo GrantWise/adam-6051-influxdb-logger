@@ -1,0 +1,66 @@
+{
+  "templateId": "and_weighing_fx_series",
+  "name": "A&D Weighing FX Series Protocol",
+  "description": "A&D Weighing FX series scales with stability and mode indicators",
+  "delimiter": "\r\n",
+  "encoding": "ASCII",
+  "fields": [
+    {
+      "name": "stability",
+      "start": 0,
+      "length": 2,
+      "fieldType": "lookup",
+      "decimalPlaces": null,
+      "lookupValues": {
+        "ST": "stable",
+        "US": "unstable",
+        "OL": "overload",
+        "UL": "underload"
+      },
+      "validationPattern": null,
+      "isRequired": true,
+      "description": "Two-character stability indicator"
+    },
+    {
+      "name": "weight",
+      "start": 3,
+      "length": 8,
+      "fieldType": "numeric",
+      "decimalPlaces": 2,
+      "lookupValues": null,
+      "validationPattern": "^[\\s+-]?\\d*\\.?\\d+$",
+      "isRequired": true,
+      "description": "Weight value with 2 decimal places"
+    },
+    {
+      "name": "unit",
+      "start": 12,
+      "length": 2,
+      "fieldType": "lookup",
+      "decimalPlaces": null,
+      "lookupValues": {
+        "kg": "kilograms",
+        "lb": "pounds",
+        "oz": "ounces",
+        " g": "grams"
+      },
+      "validationPattern": null,
+      "isRequired": true,
+      "description": "Weight unit (2 characters)"
+    }
+  ],
+  "confidenceScore": 88.0,
+  "discoveryDate": "2025-07-01T19:00:00Z",
+  "manufacturer": "A&D Weighing",
+  "modelPattern": "FX.*|EK.*|GF.*",
+  "validationStats": {
+    "totalFrames": 40,
+    "successfulParses": 36,
+    "frameConsistency": 90.0,
+    "formatMatch": 88.0,
+    "dataQuality": 88.0,
+    "averageFrameLength": 14.0,
+    "frameLengthStdDev": 0.8,
+    "validationDuration": "00:00:00.7890123"
+  }
+}

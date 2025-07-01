@@ -1,0 +1,49 @@
+{
+  "templateId": "adam_hx711_simple",
+  "name": "ADAM HX711 Simple Format",
+  "description": "Simple format from ADAM devices with HX711 load cell interfaces",
+  "delimiter": "\r\n",
+  "encoding": "ASCII",
+  "fields": [
+    {
+      "name": "weight",
+      "start": 0,
+      "length": 10,
+      "fieldType": "numeric",
+      "decimalPlaces": 2,
+      "lookupValues": null,
+      "validationPattern": "^[+-]?\\d*\\.?\\d+$",
+      "isRequired": true,
+      "description": "Weight value with sign and 2 decimal places"
+    },
+    {
+      "name": "unit",
+      "start": 11,
+      "length": 2,
+      "fieldType": "lookup",
+      "decimalPlaces": null,
+      "lookupValues": {
+        "kg": "kilograms",
+        "lb": "pounds",
+        " g": "grams"
+      },
+      "validationPattern": null,
+      "isRequired": true,
+      "description": "Weight unit (2 characters)"
+    }
+  ],
+  "confidenceScore": 85.0,
+  "discoveryDate": "2025-07-01T19:00:00Z",
+  "manufacturer": "Advantech",
+  "modelPattern": "ADAM.*HX711",
+  "validationStats": {
+    "totalFrames": 30,
+    "successfulParses": 28,
+    "frameConsistency": 93.0,
+    "formatMatch": 85.0,
+    "dataQuality": 85.0,
+    "averageFrameLength": 13.0,
+    "frameLengthStdDev": 1.0,
+    "validationDuration": "00:00:00.5678901"
+  }
+}

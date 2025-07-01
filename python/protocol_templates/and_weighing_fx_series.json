@@ -1,0 +1,106 @@
+{
+  "template_id": "and_weighing_fx_series",
+  "name": "A&D Weighing FX Series Protocol",
+  "description": "A&D Weighing FX series scales with CSV-style comma-separated output",
+  "delimiter": "\\r\\n",
+  "encoding": "ASCII",
+  "fields": [
+    {
+      "name": "stability",
+      "start": 0,
+      "length": 2,
+      "field_type": "lookup",
+      "decimal_places": null,
+      "values": {
+        "ST": "stable",
+        "US": "unstable",
+        "QT": "over_capacity",
+        "RZ": "under_zero",
+        "OL": "overload"
+      }
+    },
+    {
+      "name": "separator1",
+      "start": 2,
+      "length": 1,
+      "field_type": "text",
+      "decimal_places": null,
+      "values": null
+    },
+    {
+      "name": "gross_net",
+      "start": 3,
+      "length": 2,
+      "field_type": "lookup",
+      "decimal_places": null,
+      "values": {
+        "GS": "gross",
+        "NT": "net"
+      }
+    },
+    {
+      "name": "separator2",
+      "start": 5,
+      "length": 1,
+      "field_type": "text",
+      "decimal_places": null,
+      "values": null
+    },
+    {
+      "name": "sign",
+      "start": 6,
+      "length": 1,
+      "field_type": "lookup",
+      "decimal_places": null,
+      "values": {
+        "+": "positive",
+        "-": "negative",
+        " ": "positive"
+      }
+    },
+    {
+      "name": "weight",
+      "start": 7,
+      "length": 8,
+      "field_type": "numeric",
+      "decimal_places": 1,
+      "values": null
+    },
+    {
+      "name": "separator3",
+      "start": 15,
+      "length": 1,
+      "field_type": "text",
+      "decimal_places": null,
+      "values": null
+    },
+    {
+      "name": "unit",
+      "start": 16,
+      "length": 2,
+      "field_type": "lookup",
+      "decimal_places": null,
+      "values": {
+        "kg": "kilograms",
+        "g ": "grams",
+        "lb": "pounds",
+        "oz": "ounces"
+      }
+    }
+  ],
+  "confidence_score": 95.0,
+  "discovery_date": "2025-07-01T12:00:00Z",
+  "notes": [
+    "A&D Weighing FX series and similar models",
+    "CSV-style format with comma separators",
+    "Example: ST,GS,+00123.5,kg",
+    "Very consistent format across A&D product line",
+    "Weight value includes leading zeros"
+  ],
+  "manufacturer_info": {
+    "brand": "A&D Weighing",
+    "protocol": "FX Series Standard",
+    "common_models": ["FX-120i", "FX-200i", "FX-300i", "GF-K", "GX-K"],
+    "documentation": "FX-i series communication manual"
+  }
+}

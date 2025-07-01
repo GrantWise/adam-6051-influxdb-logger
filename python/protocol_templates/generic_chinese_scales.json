@@ -1,0 +1,56 @@
+{
+  "template_id": "generic_chinese_scales",
+  "name": "Generic Chinese Scale Protocol",
+  "description": "Common format used by many Chinese-manufactured scales",
+  "delimiter": "\\r\\n",
+  "encoding": "ASCII",
+  "fields": [
+    {
+      "name": "prefix",
+      "start": 0,
+      "length": 1,
+      "field_type": "lookup",
+      "decimal_places": null,
+      "values": {
+        "=": "weight_data",
+        "+": "weight_data",
+        " ": "weight_data"
+      }
+    },
+    {
+      "name": "weight",
+      "start": 1,
+      "length": 6,
+      "field_type": "numeric",
+      "decimal_places": 2,
+      "values": null
+    },
+    {
+      "name": "unit",
+      "start": 7,
+      "length": 2,
+      "field_type": "lookup",
+      "decimal_places": null,
+      "values": {
+        "kg": "kilograms",
+        "g ": "grams",
+        "lb": "pounds"
+      }
+    }
+  ],
+  "confidence_score": 75.0,
+  "discovery_date": "2025-07-01T12:00:00Z",
+  "notes": [
+    "Generic format used by many Chinese scale manufacturers",
+    "Simple format with equals sign or plus prefix",
+    "Example: =12.34kg\\r\\n or +12.34kg\\r\\n",
+    "Widely variable implementations",
+    "May not include stability indication"
+  ],
+  "manufacturer_info": {
+    "brand": "Generic Chinese",
+    "protocol": "Simplified ASCII",
+    "common_models": ["Various OEM scales", "Generic industrial scales"],
+    "documentation": "Highly variable - often undocumented"
+  }
+}

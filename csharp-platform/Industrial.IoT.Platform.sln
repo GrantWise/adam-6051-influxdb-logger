@@ -1,0 +1,69 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{57C685E0-F6BD-4F88-855D-E823AD16EA94}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Industrial.IoT.Platform.Core", "src\Industrial.IoT.Platform.Core\Industrial.IoT.Platform.Core.csproj", "{27567D19-7084-418E-BDF2-5D25E6802479}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Industrial.IoT.Platform.Devices", "src\Industrial.IoT.Platform.Devices\Industrial.IoT.Platform.Devices.csproj", "{62A70F85-2C19-475E-86B5-EE82988139A6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Industrial.IoT.Platform.Devices.Adam", "src\Industrial.IoT.Platform.Devices.Adam\Industrial.IoT.Platform.Devices.Adam.csproj", "{CDBE082B-1C45-4B1B-AABB-B0F47CAEB422}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Industrial.IoT.Platform.Protocols", "src\Industrial.IoT.Platform.Protocols\Industrial.IoT.Platform.Protocols.csproj", "{78C43626-6D11-49D2-B62E-7EB946EBE809}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Industrial.IoT.Platform.Storage", "src\Industrial.IoT.Platform.Storage\Industrial.IoT.Platform.Storage.csproj", "{8E24A471-D477-4C53-93E4-C59380D053DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Industrial.IoT.Platform.Api", "src\Industrial.IoT.Platform.Api\Industrial.IoT.Platform.Api.csproj", "{16A2EF4D-A0FE-42C7-885C-C88D69C0C280}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Industrial.IoT.Platform.Service", "src\Industrial.IoT.Platform.Service\Industrial.IoT.Platform.Service.csproj", "{0E977007-6D33-4658-92B9-5EB3CD054F4A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{27567D19-7084-418E-BDF2-5D25E6802479}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27567D19-7084-418E-BDF2-5D25E6802479}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27567D19-7084-418E-BDF2-5D25E6802479}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27567D19-7084-418E-BDF2-5D25E6802479}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62A70F85-2C19-475E-86B5-EE82988139A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62A70F85-2C19-475E-86B5-EE82988139A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62A70F85-2C19-475E-86B5-EE82988139A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62A70F85-2C19-475E-86B5-EE82988139A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDBE082B-1C45-4B1B-AABB-B0F47CAEB422}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDBE082B-1C45-4B1B-AABB-B0F47CAEB422}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDBE082B-1C45-4B1B-AABB-B0F47CAEB422}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDBE082B-1C45-4B1B-AABB-B0F47CAEB422}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78C43626-6D11-49D2-B62E-7EB946EBE809}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78C43626-6D11-49D2-B62E-7EB946EBE809}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78C43626-6D11-49D2-B62E-7EB946EBE809}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78C43626-6D11-49D2-B62E-7EB946EBE809}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E24A471-D477-4C53-93E4-C59380D053DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E24A471-D477-4C53-93E4-C59380D053DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E24A471-D477-4C53-93E4-C59380D053DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E24A471-D477-4C53-93E4-C59380D053DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16A2EF4D-A0FE-42C7-885C-C88D69C0C280}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16A2EF4D-A0FE-42C7-885C-C88D69C0C280}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16A2EF4D-A0FE-42C7-885C-C88D69C0C280}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16A2EF4D-A0FE-42C7-885C-C88D69C0C280}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E977007-6D33-4658-92B9-5EB3CD054F4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E977007-6D33-4658-92B9-5EB3CD054F4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E977007-6D33-4658-92B9-5EB3CD054F4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E977007-6D33-4658-92B9-5EB3CD054F4A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{27567D19-7084-418E-BDF2-5D25E6802479} = {57C685E0-F6BD-4F88-855D-E823AD16EA94}
+		{62A70F85-2C19-475E-86B5-EE82988139A6} = {57C685E0-F6BD-4F88-855D-E823AD16EA94}
+		{CDBE082B-1C45-4B1B-AABB-B0F47CAEB422} = {57C685E0-F6BD-4F88-855D-E823AD16EA94}
+		{78C43626-6D11-49D2-B62E-7EB946EBE809} = {57C685E0-F6BD-4F88-855D-E823AD16EA94}
+		{8E24A471-D477-4C53-93E4-C59380D053DD} = {57C685E0-F6BD-4F88-855D-E823AD16EA94}
+		{16A2EF4D-A0FE-42C7-885C-C88D69C0C280} = {57C685E0-F6BD-4F88-855D-E823AD16EA94}
+		{0E977007-6D33-4658-92B9-5EB3CD054F4A} = {57C685E0-F6BD-4F88-855D-E823AD16EA94}
+	EndGlobalSection
+EndGlobal

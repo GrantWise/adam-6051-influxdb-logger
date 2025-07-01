@@ -1,0 +1,20 @@
+# Grafana InfluxDB 2.x Datasource Configuration
+# This file automatically configures the InfluxDB connection when Grafana starts
+
+apiVersion: 1
+
+datasources:
+  - name: InfluxDB-ADAM
+    type: influxdb
+    uid: InfluxDB-ADAM
+    access: proxy
+    url: http://influxdb:8086
+    isDefault: true
+    editable: true
+    jsonData:
+      version: Flux
+      organization: adam_org
+      defaultBucket: adam_counters
+      tlsSkipVerify: true
+    secureJsonData:
+      token: adam-super-secret-token
