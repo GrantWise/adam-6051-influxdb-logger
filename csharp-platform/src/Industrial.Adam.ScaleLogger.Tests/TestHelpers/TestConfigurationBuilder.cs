@@ -55,8 +55,8 @@ public static class TestConfigurationBuilder
             MaxRetryAttempts = 3,
             RetryDelayMs = 1000,
             
-            // InfluxDB configuration
-            InfluxDb = ValidInfluxDbConfig(),
+            // Database configuration
+            Database = ValidDatabaseConfig(),
             
             // Protocol discovery configuration
             Discovery = ValidProtocolDiscoveryConfig(),
@@ -75,20 +75,23 @@ public static class TestConfigurationBuilder
     }
 
     /// <summary>
-    /// Create a valid InfluxDbConfig for testing
+    /// Create a valid DatabaseConfig for testing
     /// </summary>
-    /// <param name="bucket">Optional bucket name override</param>
-    /// <returns>Valid InfluxDB configuration</returns>
-    public static InfluxDbConfig ValidInfluxDbConfig(string? bucket = null)
+    /// <param name="provider">Database provider to use</param>
+    /// <returns>Valid database configuration</returns>
+    public static DatabaseConfig ValidDatabaseConfig(DatabaseProvider provider = DatabaseProvider.SQLite)
     {
-        return new InfluxDbConfig
+        return new DatabaseConfig
         {
-            Url = "http://localhost:8086",
-            Token = "test-token-" + _faker.Random.AlphaNumeric(32),
-            Organization = "test-organization",
-            Bucket = bucket ?? $"test-bucket-{_faker.Random.AlphaNumeric(6)}",
-            BatchSize = 100,
-            FlushIntervalMs = 5000
+            Provider = provider,
+            ConnectionString = provider == DatabaseProvider.SQLite 
+                ? $"Data Source=test_scale_logger_{_faker.Random.AlphaNumeric(6)}.db"
+                : $"Host=localhost;Database=test_scale_logger_{_faker.Random.AlphaNumeric(6)};Username=test;Password=test;",
+            AutoMigrate = true,
+            EnableSensitiveDataLogging = false,
+            CommandTimeoutSeconds = 60,
+            MaxRetryAttempts = 3,
+            RetryDelayMs = 5000
         };
     }
 
@@ -120,6 +123,27 @@ public static class TestConfigurationBuilder
             Name = $"Test Protocol {_faker.Random.AlphaNumeric(3)}",
             Manufacturer = _faker.PickRandom("Mettler Toledo", "Sartorius", "Ohaus"),
             Description = $"Test protocol for {_faker.Random.Words(3)}",
+            Commands = new List<string> { "W\\r\\n", "P\\r\\n", "T\\r\\n" },
+            ExpectedResponses = new List<string> { "ST,\\w*,[\\+\\-]?\\d+\\.?\\d*" },
+            WeightPattern = "([\\+\\-]?\\d+\\.?\\d*)",
+            Unit = "kg"
+        };
+    }
+
+    /// <summary>
+    /// Create a valid ProtocolTemplate for testing with specific parameters
+    /// </summary>
+    /// <param name="templateId">Template ID</param>
+    /// <param name="name">Template name</param>
+    /// <returns>Valid protocol template</returns>
+    public static ProtocolTemplate ValidProtocolTemplate(string templateId, string name)
+    {
+        return new ProtocolTemplate
+        {
+            Id = templateId,
+            Name = name,
+            Manufacturer = _faker.PickRandom("Mettler Toledo", "Sartorius", "Ohaus"),
+            Description = $"Test protocol for {name}",
             Commands = new List<string> { "W\\r\\n", "P\\r\\n", "T\\r\\n" },
             ExpectedResponses = new List<string> { "ST,\\w*,[\\+\\-]?\\d+\\.?\\d*" },
             WeightPattern = "([\\+\\-]?\\d+\\.?\\d*)",
@@ -174,42 +198,39 @@ public static class TestConfigurationBuilder
     }
 
     /// <summary>
-    /// Create an InfluxDB config with invalid settings for testing validation
+    /// Create a database config with invalid settings for testing validation
     /// </summary>
     /// <param name="errorType">Type of validation error to create</param>
-    /// <returns>Invalid InfluxDB configuration</returns>
-    public static InfluxDbConfig InvalidInfluxDbConfig(string errorType = "empty_url")
+    /// <returns>Invalid database configuration</returns>
+    public static DatabaseConfig InvalidDatabaseConfig(string errorType = "empty_connection_string")
     {
-        var config = ValidInfluxDbConfig();
+        var config = ValidDatabaseConfig();
         
         switch (errorType)
         {
-            case "empty_url":
-                config.Url = string.Empty;
+            case "empty_connection_string":
+                config.ConnectionString = string.Empty;
                 break;
-            case "invalid_url":
-                config.Url = "not-a-valid-url";
+            case "invalid_provider":
+                // Cannot create invalid enum value directly, this would be caught by model validation
                 break;
-            case "empty_token":
-                config.Token = string.Empty;
+            case "invalid_timeout":
+                config.CommandTimeoutSeconds = 0;
                 break;
-            case "empty_organization":
-                config.Organization = string.Empty;
+            case "timeout_too_high":
+                config.CommandTimeoutSeconds = 400;
                 break;
-            case "empty_bucket":
-                config.Bucket = string.Empty;
+            case "invalid_retry_attempts":
+                config.MaxRetryAttempts = -1;
                 break;
-            case "invalid_batch_size":
-                config.BatchSize = 0;
+            case "retry_attempts_too_high":
+                config.MaxRetryAttempts = 15;
                 break;
-            case "batch_size_too_large":
-                config.BatchSize = 2000;
+            case "invalid_retry_delay":
+                config.RetryDelayMs = 0;
                 break;
-            case "invalid_flush_interval":
-                config.FlushIntervalMs = 0;
-                break;
-            case "flush_interval_too_small":
-                config.FlushIntervalMs = 100;
+            case "retry_delay_too_high":
+                config.RetryDelayMs = 50000;
                 break;
         }
         

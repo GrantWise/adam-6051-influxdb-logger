@@ -4,13 +4,13 @@
 
 ## Overview
 
-This library provides industrial-grade scale data logging for ADAM-4571 devices with automatic protocol discovery and InfluxDB storage. Built following the proven patterns from our successful ADAM-6051 implementation.
+This library provides industrial-grade scale data logging for ADAM-4571 devices with automatic protocol discovery and Entity Framework database storage. Built following the proven patterns from our successful ADAM-6051 implementation.
 
 ## Key Features
 
 - ✅ **TCP-based scale communication** with ADAM-4571 devices
 - ✅ **Automatic protocol discovery** using template matching
-- ✅ **InfluxDB data storage** with proven reliability patterns
+- ✅ **Entity Framework database storage** with PostgreSQL/SQLite support
 - ✅ **Real-time data streams** using Reactive Extensions
 - ✅ **Industrial error handling** with exponential backoff retry
 - ✅ **Runtime device management** (add/remove devices dynamically)
@@ -32,7 +32,8 @@ using Industrial.Adam.ScaleLogger.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Scale Logger as hosted service
+// Add database services and Scale Logger as hosted service
+builder.Services.AddScaleLoggerDatabase(builder.Configuration);
 builder.Services.AddScaleLoggerHostedService(builder.Configuration);
 
 var app = builder.Build();
@@ -54,11 +55,10 @@ app.Run();
       }
     ],
     "PollIntervalMs": 5000,
-    "InfluxDb": {
-      "Url": "http://localhost:8086",
-      "Token": "your-token",
-      "Organization": "manufacturing",
-      "Bucket": "scale_data"
+    "Database": {
+      "Provider": "PostgreSQL",
+      "ConnectionString": "Host=localhost;Database=scalelogger;Username=postgres;Password=password",
+      "AutoMigrate": true
     }
   }
 }
@@ -70,13 +70,13 @@ Following proven ADAM-6051 patterns:
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│ ScaleLogger     │    │ DeviceManager    │    │ InfluxDbManager │
-│ Service         ├───►│                  │    │                 │
-│                 │    │ - TCP Comm       │    │ - Batch Writes  │
-│ - Polling Timer │    │ - Health Monitor │    │ - Retry Logic   │
-│ - Health Timer  │    │ - Error Handling │    │ - Connection    │
-│ - Reactive      │    │                  │    │   Management    │
-│   Streams       │    │                  │    │                 │
+│ ScaleLogger     │    │ DeviceManager    │    │ Repository      │
+│ Service         ├───►│                  │    │ Pattern         │
+│                 │    │ - TCP Comm       │    │                 │
+│ - Polling Timer │    │ - Health Monitor │    │ - WeighingRepo  │
+│ - Health Timer  │    │ - Error Handling │    │ - DeviceRepo    │
+│ - Reactive      │    │                  │    │ - EventRepo     │
+│   Streams       │    │                  │    │ - EF Core       │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
 ```
 

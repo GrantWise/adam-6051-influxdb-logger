@@ -222,7 +222,7 @@ public sealed class RetryPolicyService
         public static bool NotConfigurationErrors(Exception ex)
         {
             return !(ex is ArgumentNullException ||
-                     ex is System.Configuration.ConfigurationErrorsException ||
+                     ex is InvalidOperationException ||
                      ex is UnauthorizedAccessException ||
                      ex is System.Security.SecurityException);
         }

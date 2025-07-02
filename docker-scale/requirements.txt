@@ -1,0 +1,24 @@
+# ADAM Scale Logger Industrial Dependencies
+# Production-ready industrial automation libraries
+
+# Database connectivity
+psycopg2-binary>=2.9.0,<3.0.0  # PostgreSQL connectivity (primary)
+# SQLite is built-in to Python (fallback database)
+
+# Industrial networking and protocols
+# Note: Scale logger uses TCP sockets, not Modbus like the counter logger
+
+# HTTP server for health checks (built-in)
+# JSON handling (built-in)
+
+# Data processing and validation
+# All using built-in Python libraries for minimal dependencies
+
+# Development and testing dependencies
+# pytest>=7.0.0
+# pytest-cov>=4.0.0 
+# mock>=4.0.0
+
+# Optional: Enhanced logging and monitoring
+# structlog>=22.0.0
+# prometheus-client>=0.15.0

@@ -143,7 +143,7 @@ public sealed class ScaleDeviceManager : IDisposable
     /// <summary>
     /// Test connectivity to a scale device
     /// </summary>
-    public async Task<ConnectivityTestResult> TestConnectivityAsync(ScaleDeviceConfig config, 
+    public async Task<Interfaces.ConnectivityTestResult> TestConnectivityAsync(ScaleDeviceConfig config, 
         CancellationToken cancellationToken = default)
     {
         var startTime = DateTimeOffset.UtcNow;
@@ -161,7 +161,7 @@ public sealed class ScaleDeviceManager : IDisposable
             diagnostics["readingsObtained"] = readings.Count;
             diagnostics["protocol"] = testDevice.Protocol?.Name ?? "unknown";
 
-            return new ConnectivityTestResult
+            return new Interfaces.ConnectivityTestResult
             {
                 Success = readings.Any() && readings.All(r => !r.IsError),
                 Duration = duration,
@@ -176,7 +176,7 @@ public sealed class ScaleDeviceManager : IDisposable
             diagnostics["error"] = ex.Message;
             diagnostics["errorType"] = ex.GetType().Name;
 
-            return new ConnectivityTestResult
+            return new Interfaces.ConnectivityTestResult
             {
                 Success = false,
                 Duration = duration,

@@ -1,0 +1,146 @@
+version: '3.8'
+
+services:
+  # PostgreSQL - Primary database for weight data
+  postgres:
+    image: postgres:15.4
+    container_name: adam-scale-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=adam_industrial
+      - POSTGRES_USER=adam_user
+      - POSTGRES_PASSWORD=adam_secure_password
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init/postgres:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - adam_scale_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adam_user -d adam_industrial"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Grafana - Visualization dashboard for scale data
+  grafana:
+    image: grafana/grafana:10.1.5
+    container_name: adam-scale-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=
+      - GF_FEATURE_TOGGLES_ENABLE=publicDashboards
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - adam_scale_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ADAM Scale Logger - Main application service
+  adam-scale-logger:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: adam-scale-logger
+    restart: unless-stopped
+    environment:
+      # Device configuration
+      - ADAM_HOST=${ADAM_HOST:-192.168.1.101}
+      - ADAM_PORT=${ADAM_PORT:-4001}
+      - ADAM_UNIT_ID=${ADAM_UNIT_ID:-1}
+      
+      # Database configuration
+      - DATABASE_TYPE=${DATABASE_TYPE:-postgresql}
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=adam_industrial
+      - DATABASE_USER=adam_user
+      - DATABASE_PASSWORD=adam_secure_password
+      
+      # Application configuration
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - POLL_INTERVAL=${POLL_INTERVAL:-10.0}
+      - DISCOVERY_MODE=${DISCOVERY_MODE:-false}
+      - SERVICE_MODE=${SERVICE_MODE:-true}
+      
+      # Health monitoring
+      - HEALTH_CHECK_PORT=8080
+      - DEVICE_NAME=${DEVICE_NAME:-ADAM-4571-Scale}
+      - DEVICE_LOCATION=${DEVICE_LOCATION:-production_line_1}
+    volumes:
+      - ./config:/app/config
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - scale_templates:/app/templates
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - adam_scale_network
+    ports:
+      - "8080:8080"  # Health monitoring endpoint
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      start_period: 30s
+
+  # Scale Discovery Service - Protocol discovery when needed
+  adam-scale-discovery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: adam-scale-discovery
+    restart: "no"  # Only run when needed
+    environment:
+      - ADAM_HOST=${ADAM_HOST:-192.168.1.101}
+      - ADAM_PORT=${ADAM_PORT:-4001}
+      - DATABASE_TYPE=${DATABASE_TYPE:-postgresql}
+      - DATABASE_HOST=postgres
+      - DATABASE_PASSWORD=adam_secure_password
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./config:/app/config
+      - ./logs:/app/logs
+      - scale_templates:/app/templates
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - adam_scale_network
+    profiles:
+      - discovery  # Only start with --profile discovery
+    command: ["--discover"]
+
+# Persistent volumes for data storage
+volumes:
+  postgres_data:
+    driver: local
+  grafana_data:
+    driver: local
+  scale_templates:
+    driver: local
+
+# Internal network for service communication
+networks:
+  adam_scale_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16

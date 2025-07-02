@@ -260,3 +260,65 @@ public sealed record ProtocolTemplate
     /// </summary>
     public Dictionary<string, object> Settings { get; init; } = new();
 }
+
+
+/// <summary>
+/// Weighing statistics for a device
+/// </summary>
+public sealed record WeighingStatistics
+{
+    /// <summary>
+    /// Device identifier
+    /// </summary>
+    public required string DeviceId { get; init; }
+
+    /// <summary>
+    /// Total number of weighings
+    /// </summary>
+    public required int TotalWeighings { get; init; }
+
+    /// <summary>
+    /// Minimum weight recorded
+    /// </summary>
+    public required decimal MinWeight { get; init; }
+
+    /// <summary>
+    /// Maximum weight recorded
+    /// </summary>
+    public required decimal MaxWeight { get; init; }
+
+    /// <summary>
+    /// Average weight
+    /// </summary>
+    public required decimal AverageWeight { get; init; }
+
+    /// <summary>
+    /// First weighing timestamp
+    /// </summary>
+    public required DateTimeOffset FirstWeighing { get; init; }
+
+    /// <summary>
+    /// Last weighing timestamp
+    /// </summary>
+    public required DateTimeOffset LastWeighing { get; init; }
+
+    /// <summary>
+    /// Number of stable weighings
+    /// </summary>
+    public required int StableWeighings { get; init; }
+
+    /// <summary>
+    /// Number of good quality weighings
+    /// </summary>
+    public required int GoodQualityWeighings { get; init; }
+
+    /// <summary>
+    /// Stability rate percentage
+    /// </summary>
+    public double StabilityRate => TotalWeighings > 0 ? (double)StableWeighings / TotalWeighings * 100 : 0;
+
+    /// <summary>
+    /// Quality rate percentage
+    /// </summary>
+    public double QualityRate => TotalWeighings > 0 ? (double)GoodQualityWeighings / TotalWeighings * 100 : 0;
+}

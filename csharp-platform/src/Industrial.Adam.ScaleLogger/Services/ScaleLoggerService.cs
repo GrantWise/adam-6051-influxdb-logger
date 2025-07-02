@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Industrial.Adam.ScaleLogger.Configuration;
+using Industrial.Adam.ScaleLogger.Data.Repositories;
 using Industrial.Adam.ScaleLogger.Infrastructure;
 using Industrial.Adam.ScaleLogger.Interfaces;
 using Industrial.Adam.ScaleLogger.Models;
@@ -20,7 +21,9 @@ public sealed class ScaleLoggerService : IScaleLoggerService
 {
     private readonly Adam4571Config _config;
     private readonly ScaleDeviceManager _deviceManager;
-    private readonly InfluxDbManager _influxManager;
+    private readonly IWeighingRepository _weighingRepository;
+    private readonly IDeviceRepository _deviceRepository;
+    private readonly ISystemEventRepository _systemEventRepository;
     private readonly ProtocolDiscoveryService _discoveryService;
     private readonly RetryPolicyService _retryPolicy;
     private readonly ILogger<ScaleLoggerService> _logger;
@@ -47,14 +50,18 @@ public sealed class ScaleLoggerService : IScaleLoggerService
     public ScaleLoggerService(
         Adam4571Config config,
         ScaleDeviceManager deviceManager,
-        InfluxDbManager influxManager,
+        IWeighingRepository weighingRepository,
+        IDeviceRepository deviceRepository,
+        ISystemEventRepository systemEventRepository,
         ProtocolDiscoveryService discoveryService,
         RetryPolicyService retryPolicy,
         ILogger<ScaleLoggerService> logger)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _deviceManager = deviceManager ?? throw new ArgumentNullException(nameof(deviceManager));
-        _influxManager = influxManager ?? throw new ArgumentNullException(nameof(influxManager));
+        _weighingRepository = weighingRepository ?? throw new ArgumentNullException(nameof(weighingRepository));
+        _deviceRepository = deviceRepository ?? throw new ArgumentNullException(nameof(deviceRepository));
+        _systemEventRepository = systemEventRepository ?? throw new ArgumentNullException(nameof(systemEventRepository));
         _discoveryService = discoveryService ?? throw new ArgumentNullException(nameof(discoveryService));
         _retryPolicy = retryPolicy ?? throw new ArgumentNullException(nameof(retryPolicy));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -75,12 +82,12 @@ public sealed class ScaleLoggerService : IScaleLoggerService
         {
             _logger.LogInformation("Starting Scale Logger Service with {DeviceCount} devices", _config.Devices.Count);
 
-            // Connect to InfluxDB
-            if (!await _influxManager.ConnectAsync())
-            {
-                _logger.LogError("Failed to connect to InfluxDB");
-                return false;
-            }
+            // Log startup event
+            await _systemEventRepository.LogEventAsync(
+                "ServiceStartup",
+                $"Scale Logger Service starting with {_config.Devices.Count} devices",
+                severity: "Information",
+                cancellationToken: cancellationToken);
 
             // Initialize devices with protocol discovery
             await InitializeDevicesAsync(cancellationToken);
@@ -117,11 +124,12 @@ public sealed class ScaleLoggerService : IScaleLoggerService
             // Cancel ongoing operations
             _cancellationTokenSource.Cancel();
 
-            // Flush any pending data
-            await _influxManager.FlushAsync();
-
-            // Disconnect from InfluxDB
-            await _influxManager.DisconnectAsync();
+            // Log shutdown event
+            await _systemEventRepository.LogEventAsync(
+                "ServiceShutdown",
+                "Scale Logger Service stopping",
+                severity: "Information",
+                cancellationToken: cancellationToken);
 
             _isRunning = false;
             _logger.LogInformation("Scale Logger Service stopped");
@@ -157,8 +165,19 @@ public sealed class ScaleLoggerService : IScaleLoggerService
             
             if (success)
             {
+                // Register device in repository
+                await _deviceRepository.UpsertDeviceAsync(deviceConfig, cancellationToken);
+                
                 _runtimeDevices.TryAdd(deviceConfig.DeviceId, deviceConfig);
                 _logger.LogInformation("Added device {DeviceId} at runtime", deviceConfig.DeviceId);
+                
+                // Log device addition event
+                await _systemEventRepository.LogEventAsync(
+                    "DeviceAdded",
+                    $"Device {deviceConfig.DeviceId} added at runtime",
+                    deviceConfig.DeviceId,
+                    "Information",
+                    cancellationToken: cancellationToken);
             }
 
             return success;
@@ -180,8 +199,19 @@ public sealed class ScaleLoggerService : IScaleLoggerService
             
             if (success)
             {
+                // Deactivate device in repository
+                await _deviceRepository.DeactivateDeviceAsync(deviceId, cancellationToken);
+                
                 _runtimeDevices.TryRemove(deviceId, out _);
                 _logger.LogInformation("Removed device {DeviceId} at runtime", deviceId);
+                
+                // Log device removal event
+                await _systemEventRepository.LogEventAsync(
+                    "DeviceRemoved",
+                    $"Device {deviceId} removed at runtime",
+                    deviceId,
+                    "Information",
+                    cancellationToken: cancellationToken);
             }
 
             return success;
@@ -205,7 +235,7 @@ public sealed class ScaleLoggerService : IScaleLoggerService
         return await _deviceManager.GetAllDeviceHealthAsync();
     }
 
-    public async Task<ConnectivityTestResult> TestDeviceConnectivityAsync(ScaleDeviceConfig deviceConfig, 
+    public async Task<Interfaces.ConnectivityTestResult> TestDeviceConnectivityAsync(ScaleDeviceConfig deviceConfig, 
         CancellationToken cancellationToken = default)
     {
         if (_disposed) throw new ObjectDisposedException(nameof(ScaleLoggerService));
@@ -253,11 +283,32 @@ public sealed class ScaleLoggerService : IScaleLoggerService
                 }
 
                 await _deviceManager.AddDeviceAsync(deviceConfig, protocol);
+                
+                // Register device in repository
+                await _deviceRepository.UpsertDeviceAsync(deviceConfig, cancellationToken);
+                
                 _logger.LogInformation("Initialized device {DeviceId}", deviceConfig.DeviceId);
+                
+                // Log device initialization event
+                await _systemEventRepository.LogEventAsync(
+                    "DeviceInitialized",
+                    $"Device {deviceConfig.DeviceId} initialized successfully",
+                    deviceConfig.DeviceId,
+                    "Information",
+                    cancellationToken: cancellationToken);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to initialize device {DeviceId}", deviceConfig.DeviceId);
+                
+                // Log device initialization error
+                await _systemEventRepository.LogEventAsync(
+                    "DeviceInitializationError",
+                    $"Failed to initialize device {deviceConfig.DeviceId}: {ex.Message}",
+                    deviceConfig.DeviceId,
+                    "Error",
+                    details: new { Exception = ex.ToString() },
+                    cancellationToken: cancellationToken);
             }
         });
 
@@ -298,8 +349,8 @@ public sealed class ScaleLoggerService : IScaleLoggerService
 
             if (readings.Any())
             {
-                // Write to InfluxDB
-                await _influxManager.WriteScaleDataAsync(readings);
+                // Save to database using repository
+                await _weighingRepository.SaveWeighingsAsync(readings, _cancellationTokenSource.Token);
 
                 // Emit through reactive stream
                 foreach (var reading in readings)
@@ -317,6 +368,21 @@ public sealed class ScaleLoggerService : IScaleLoggerService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during data polling");
+            
+            // Log polling error event
+            try
+            {
+                await _systemEventRepository.LogEventAsync(
+                    "DataPollingError",
+                    $"Error during data polling: {ex.Message}",
+                    severity: "Error",
+                    details: new { Exception = ex.ToString() },
+                    cancellationToken: _cancellationTokenSource.Token);
+            }
+            catch
+            {
+                // Ignore errors during error logging to prevent infinite loops
+            }
         }
     }
 
@@ -342,6 +408,21 @@ public sealed class ScaleLoggerService : IScaleLoggerService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during health check");
+            
+            // Log health check error event
+            try
+            {
+                await _systemEventRepository.LogEventAsync(
+                    "HealthCheckError",
+                    $"Error during health check: {ex.Message}",
+                    severity: "Error",
+                    details: new { Exception = ex.ToString() },
+                    cancellationToken: _cancellationTokenSource.Token);
+            }
+            catch
+            {
+                // Ignore errors during error logging to prevent infinite loops
+            }
         }
     }
 
@@ -363,7 +444,6 @@ public sealed class ScaleLoggerService : IScaleLoggerService
             _healthSubject.Dispose();
             _cancellationTokenSource.Dispose();
             _deviceManager.Dispose();
-            _influxManager.Dispose();
 
             _logger.LogInformation("Scale Logger Service disposed");
         }

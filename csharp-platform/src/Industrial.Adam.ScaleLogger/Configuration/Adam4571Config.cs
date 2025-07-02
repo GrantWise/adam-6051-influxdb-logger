@@ -9,7 +9,7 @@ namespace Industrial.Adam.ScaleLogger.Configuration;
 /// Configuration for ADAM-4571 scale logging service
 /// Follows proven ADAM-6051 configuration patterns
 /// </summary>
-public sealed class Adam4571Config
+public sealed class Adam4571Config : IValidatableObject
 {
     /// <summary>
     /// List of scale devices to monitor
@@ -42,15 +42,92 @@ public sealed class Adam4571Config
     public int RetryDelayMs { get; set; } = 1000;
 
     /// <summary>
-    /// InfluxDB configuration for data storage
+    /// Database configuration for weighing transaction storage
     /// </summary>
     [Required]
-    public InfluxDbConfig InfluxDb { get; set; } = new();
+    public DatabaseConfig Database { get; set; } = new() { ConnectionString = "" };
 
     /// <summary>
     /// Protocol discovery settings
     /// </summary>
     public ProtocolDiscoveryConfig Discovery { get; set; } = new();
+
+    /// <summary>
+    /// Custom validation logic following industrial standards
+    /// </summary>
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        var results = new List<ValidationResult>();
+
+        // Validate devices collection
+        if (Devices == null || !Devices.Any())
+        {
+            results.Add(new ValidationResult(
+                "Devices collection cannot be empty - at least one scale device must be configured",
+                new[] { nameof(Devices) }));
+        }
+        else
+        {
+            // Check for duplicate device IDs
+            var duplicateIds = Devices
+                .GroupBy(d => d.DeviceId, StringComparer.OrdinalIgnoreCase)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key)
+                .ToList();
+
+            if (duplicateIds.Any())
+            {
+                results.Add(new ValidationResult(
+                    $"Duplicate device IDs found: {string.Join(", ", duplicateIds)}",
+                    new[] { nameof(Devices) }));
+            }
+
+            // Check device count limits (industrial constraint)
+            if (Devices.Count > 50)
+            {
+                results.Add(new ValidationResult(
+                    $"Too many devices configured ({Devices.Count}). Maximum allowed: 50",
+                    new[] { nameof(Devices) }));
+            }
+
+            // Validate each device configuration
+            for (int i = 0; i < Devices.Count; i++)
+            {
+                var device = Devices[i];
+                var deviceResults = new List<ValidationResult>();
+                var deviceContext = new ValidationContext(device);
+
+                if (!Validator.TryValidateObject(device, deviceContext, deviceResults, validateAllProperties: true))
+                {
+                    foreach (var deviceResult in deviceResults)
+                    {
+                        results.Add(new ValidationResult(
+                            $"Device {i + 1} ({device.DeviceId}): {deviceResult.ErrorMessage}",
+                            deviceResult.MemberNames.Select(m => $"{nameof(Devices)}[{i}].{m}")));
+                    }
+                }
+            }
+        }
+
+        // Validate database configuration
+        if (Database != null)
+        {
+            var dbResults = new List<ValidationResult>();
+            var dbContext = new ValidationContext(Database);
+
+            if (!Validator.TryValidateObject(Database, dbContext, dbResults, validateAllProperties: true))
+            {
+                foreach (var dbResult in dbResults)
+                {
+                    results.Add(new ValidationResult(
+                        $"Database configuration: {dbResult.ErrorMessage}",
+                        dbResult.MemberNames.Select(m => $"{nameof(Database)}.{m}")));
+                }
+            }
+        }
+
+        return results;
+    }
 }
 
 /// <summary>
@@ -114,47 +191,6 @@ public sealed class ScaleDeviceConfig
     public string? Model { get; set; }
 }
 
-/// <summary>
-/// InfluxDB configuration following ADAM-6051 patterns
-/// </summary>
-public sealed class InfluxDbConfig
-{
-    /// <summary>
-    /// InfluxDB server URL
-    /// </summary>
-    [Required]
-    public string Url { get; set; } = "http://localhost:8086";
-
-    /// <summary>
-    /// Authentication token
-    /// </summary>
-    [Required]
-    public string Token { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Organization name
-    /// </summary>
-    [Required]
-    public string Organization { get; set; } = "manufacturing";
-
-    /// <summary>
-    /// Bucket name for scale data
-    /// </summary>
-    [Required]
-    public string Bucket { get; set; } = "scale_data";
-
-    /// <summary>
-    /// Batch size for writes
-    /// </summary>
-    [Range(1, 1000)]
-    public int BatchSize { get; set; } = 100;
-
-    /// <summary>
-    /// Flush interval in milliseconds
-    /// </summary>
-    [Range(1000, 60000)]
-    public int FlushIntervalMs { get; set; } = 5000;
-}
 
 /// <summary>
 /// Protocol discovery configuration

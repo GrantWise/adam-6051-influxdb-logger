@@ -2,6 +2,7 @@
 // Following proven ADAM-6051 service registration patterns
 
 using Industrial.Adam.ScaleLogger.Configuration;
+using Industrial.Adam.ScaleLogger.Data.Repositories;
 using Industrial.Adam.ScaleLogger.Infrastructure;
 using Industrial.Adam.ScaleLogger.Interfaces;
 using Industrial.Adam.ScaleLogger.Services;
@@ -15,6 +16,14 @@ namespace Industrial.Adam.ScaleLogger.Extensions;
 /// <summary>
 /// Extension methods for registering Scale Logger services
 /// Following proven ADAM-6051 dependency injection patterns
+/// 
+/// Usage:
+/// services.AddScaleLogger(configuration);
+/// services.AddScaleLoggerDatabase(configuration); // Register repositories
+/// 
+/// Or with explicit database provider:
+/// services.AddScaleLoggerPostgreSQL(connectionString);
+/// services.AddScaleLogger(configuration);
 /// </summary>
 public static class ServiceCollectionExtensions
 {
@@ -31,14 +40,18 @@ public static class ServiceCollectionExtensions
         var config = new Adam4571Config();
         configuration.GetSection("ScaleLogger").Bind(config);
         services.AddSingleton(config);
-        services.AddSingleton(config.InfluxDb);
         services.AddSingleton(config.Discovery);
 
         // Register core services
         services.AddSingleton<RetryPolicyService>();
         services.AddSingleton<ScaleDeviceManager>();
-        services.AddSingleton<InfluxDbManager>();
         services.AddSingleton<ProtocolDiscoveryService>();
+        
+        // Register repositories (will be provided by AddScaleLoggerDatabase)
+        // services.AddScoped<IWeighingRepository, WeighingRepository>();
+        // services.AddScoped<IDeviceRepository, DeviceRepository>();
+        // services.AddScoped<ISystemEventRepository, SystemEventRepository>();
+        
         services.AddSingleton<IScaleLoggerService, ScaleLoggerService>();
 
         return services;
@@ -55,14 +68,18 @@ public static class ServiceCollectionExtensions
 
         // Register configuration
         services.AddSingleton(config);
-        services.AddSingleton(config.InfluxDb);
         services.AddSingleton(config.Discovery);
 
         // Register core services
         services.AddSingleton<RetryPolicyService>();
         services.AddSingleton<ScaleDeviceManager>();
-        services.AddSingleton<InfluxDbManager>();
         services.AddSingleton<ProtocolDiscoveryService>();
+        
+        // Register repositories (will be provided by AddScaleLoggerDatabase)
+        // services.AddScoped<IWeighingRepository, WeighingRepository>();
+        // services.AddScoped<IDeviceRepository, DeviceRepository>();
+        // services.AddScoped<ISystemEventRepository, SystemEventRepository>();
+        
         services.AddSingleton<IScaleLoggerService, ScaleLoggerService>();
 
         return services;
@@ -80,14 +97,18 @@ public static class ServiceCollectionExtensions
         // Register configuration factory
         services.AddSingleton(configFactory);
         services.AddSingleton<Adam4571Config>(provider => configFactory(provider));
-        services.AddSingleton<InfluxDbConfig>(provider => configFactory(provider).InfluxDb);
         services.AddSingleton<ProtocolDiscoveryConfig>(provider => configFactory(provider).Discovery);
 
         // Register core services
         services.AddSingleton<RetryPolicyService>();
         services.AddSingleton<ScaleDeviceManager>();
-        services.AddSingleton<InfluxDbManager>();
         services.AddSingleton<ProtocolDiscoveryService>();
+        
+        // Register repositories (will be provided by AddScaleLoggerDatabase)
+        // services.AddScoped<IWeighingRepository, WeighingRepository>();
+        // services.AddScoped<IDeviceRepository, DeviceRepository>();
+        // services.AddScoped<ISystemEventRepository, SystemEventRepository>();
+        
         services.AddSingleton<IScaleLoggerService, ScaleLoggerService>();
 
         return services;
