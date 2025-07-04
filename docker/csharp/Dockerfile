@@ -20,8 +20,7 @@ COPY src/ ./src/
 
 # Build and publish the application
 RUN dotnet publish ./src/Industrial.Adam.Logger.Examples/Industrial.Adam.Logger.Examples.csproj \
-    -c Release -o /app/publish \
-    --no-restore
+    -c Release -o /app/publish
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
