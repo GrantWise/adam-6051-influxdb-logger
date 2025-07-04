@@ -7,6 +7,8 @@ using Industrial.Adam.Logger.Interfaces;
 using Industrial.Adam.Logger.Services;
 using Industrial.Adam.Logger.Utilities;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Industrial.Adam.Logger.Extensions;
 
@@ -46,9 +48,36 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IRetryPolicyService, RetryPolicyService>();
         services.AddSingleton<IAdamLoggerService, AdamLoggerService>();
         
-        // Register InfluxDB writer and processor
-        services.AddSingleton<IInfluxDbWriter, InfluxDbWriter>();
-        services.AddSingleton<IDataProcessor, InfluxDbDataProcessor>();
+        // Register InfluxDB writer - use null writer if not configured
+        services.AddSingleton<IInfluxDbWriter>(provider =>
+        {
+            var config = provider.GetService<IOptions<AdamLoggerConfig>>()?.Value;
+            if (config?.InfluxDb != null)
+            {
+                return new InfluxDbWriter(
+                    provider.GetRequiredService<IOptions<AdamLoggerConfig>>(),
+                    provider.GetRequiredService<IRetryPolicyService>(),
+                    provider.GetRequiredService<ILogger<InfluxDbWriter>>());
+            }
+            return new NullInfluxDbWriter(provider.GetRequiredService<ILogger<NullInfluxDbWriter>>());
+        });
+        
+        // Register data processor - use InfluxDB processor if configured, otherwise default
+        services.AddSingleton<IDataProcessor>(provider =>
+        {
+            var config = provider.GetService<IOptions<AdamLoggerConfig>>()?.Value;
+            if (config?.InfluxDb != null)
+            {
+                return provider.GetRequiredService<InfluxDbDataProcessor>();
+            }
+            return new DefaultDataProcessor(
+                provider.GetRequiredService<IDataValidator>(),
+                provider.GetRequiredService<IDataTransformer>(),
+                provider.GetRequiredService<ILogger<DefaultDataProcessor>>());
+        });
+        
+        // Register InfluxDB data processor as singleton for injection
+        services.AddSingleton<InfluxDbDataProcessor>();
         
         // Register as hosted service for automatic start/stop lifecycle management
         services.AddHostedService<AdamLoggerService>(provider => 
@@ -145,9 +174,36 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IRetryPolicyService, RetryPolicyService>();
         services.AddSingleton<IAdamLoggerService, AdamLoggerService>();
         
-        // Register InfluxDB writer and processor
-        services.AddSingleton<IInfluxDbWriter, InfluxDbWriter>();
-        services.AddSingleton<IDataProcessor, InfluxDbDataProcessor>();
+        // Register InfluxDB writer - use null writer if not configured
+        services.AddSingleton<IInfluxDbWriter>(provider =>
+        {
+            var config = provider.GetService<IOptions<AdamLoggerConfig>>()?.Value;
+            if (config?.InfluxDb != null)
+            {
+                return new InfluxDbWriter(
+                    provider.GetRequiredService<IOptions<AdamLoggerConfig>>(),
+                    provider.GetRequiredService<IRetryPolicyService>(),
+                    provider.GetRequiredService<ILogger<InfluxDbWriter>>());
+            }
+            return new NullInfluxDbWriter(provider.GetRequiredService<ILogger<NullInfluxDbWriter>>());
+        });
+        
+        // Register data processor - use InfluxDB processor if configured, otherwise default
+        services.AddSingleton<IDataProcessor>(provider =>
+        {
+            var config = provider.GetService<IOptions<AdamLoggerConfig>>()?.Value;
+            if (config?.InfluxDb != null)
+            {
+                return provider.GetRequiredService<InfluxDbDataProcessor>();
+            }
+            return new DefaultDataProcessor(
+                provider.GetRequiredService<IDataValidator>(),
+                provider.GetRequiredService<IDataTransformer>(),
+                provider.GetRequiredService<ILogger<DefaultDataProcessor>>());
+        });
+        
+        // Register InfluxDB data processor as singleton for injection
+        services.AddSingleton<InfluxDbDataProcessor>();
         
         // Register as hosted service
         services.AddHostedService<AdamLoggerService>(provider => 
