@@ -187,14 +187,14 @@ public class InfluxDbWriter : IInfluxDbWriter
             .Tag("channel", reading.Channel.ToString())
             .Tag("channel_name", $"Ch{reading.Channel}")
             .Tag("quality", reading.Quality.ToString())
+            .Field("count", reading.ProcessedValue ?? reading.RawValue)
             .Field("raw_value", reading.RawValue)
-            .Field("processed_value", reading.ProcessedValue ?? reading.RawValue)
             .Timestamp(reading.Timestamp, WritePrecision.Ms);
 
         // Add rate of change if available
         if (reading.Rate.HasValue)
         {
-            point = point.Field("rate_of_change", reading.Rate.Value);
+            point = point.Field("rate", reading.Rate.Value);
         }
 
         // Add device tags

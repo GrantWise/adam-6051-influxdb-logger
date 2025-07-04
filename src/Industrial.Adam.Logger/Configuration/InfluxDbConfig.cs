@@ -33,12 +33,12 @@ public class InfluxDbConfig
     /// InfluxDB bucket name for storing data
     /// </summary>
     [Required(ErrorMessage = "InfluxDB bucket is required")]
-    public string Bucket { get; set; } = "adam-data";
+    public string Bucket { get; set; } = "adam_counters";
 
     /// <summary>
     /// Measurement name for storing counter data
     /// </summary>
-    public string Measurement { get; set; } = "adam_counters";
+    public string Measurement { get; set; } = "counter_data";
 
     /// <summary>
     /// Batch size for writing data points to InfluxDB

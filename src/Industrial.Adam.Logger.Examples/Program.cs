@@ -33,10 +33,10 @@ public class Program
                     config.InfluxDb = new InfluxDbConfig
                     {
                         Url = "http://localhost:8086",
-                        Token = "your-influxdb-token-here", // Replace with your actual token
-                        Organization = "your-org",           // Replace with your organization
-                        Bucket = "adam-data",
-                        Measurement = "adam_counters",
+                        Token = "adam-super-secret-token",  // Matches docker setup
+                        Organization = "adam_org",          // Matches docker setup  
+                        Bucket = "adam_counters",           // Matches docker setup
+                        Measurement = "counter_data",       // Matches Grafana dashboard
                         WriteBatchSize = 50,
                         FlushIntervalMs = 5000
                     };
