@@ -41,34 +41,38 @@ public class Program
                         FlushIntervalMs = 5000
                     };
 
-                    // Add a demo device configuration
-                    // Note: This will attempt to connect to 127.0.0.1:502
-                    // You may need to run a Modbus simulator or change the IP
-                    config.Devices.Add(new AdamDeviceConfig
+                    // Add a demo device configuration only if not running in Docker
+                    // Docker configuration is handled via environment variables
+                    if (Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") != "Production")
                     {
-                        DeviceId = "DEMO_ADAM_001",
-                        IpAddress = "127.0.0.1", // Localhost - change to your device IP
-                        Port = 502,
-                        UnitId = 1,
-                        TimeoutMs = 2000,
-                        MaxRetries = 1,
-                        Channels = new List<ChannelConfig>
+                        // Note: This will attempt to connect to 127.0.0.1:502
+                        // You may need to run a Modbus simulator or change the IP
+                        config.Devices.Add(new AdamDeviceConfig
                         {
-                            new()
+                            DeviceId = "DEMO_ADAM_001",
+                            IpAddress = "127.0.0.1", // Localhost - change to your device IP
+                            Port = 502,
+                            UnitId = 1,
+                            TimeoutMs = 2000,
+                            MaxRetries = 1,
+                            Channels = new List<ChannelConfig>
                             {
-                                ChannelNumber = 0,
-                                Name = "DemoCounter",
-                                StartRegister = 0,
-                                RegisterCount = 2, // 32-bit counter
-                                Enabled = true,
-                                MinValue = 0,
-                                MaxValue = 4294967295,
-                                ScaleFactor = 1.0,
-                                Offset = 0.0,
-                                DecimalPlaces = 0
+                                new()
+                                {
+                                    ChannelNumber = 0,
+                                    Name = "DemoCounter",
+                                    StartRegister = 0,
+                                    RegisterCount = 2, // 32-bit counter
+                                    Enabled = true,
+                                    MinValue = 0,
+                                    MaxValue = 4294967295,
+                                    ScaleFactor = 1.0,
+                                    Offset = 0.0,
+                                    DecimalPlaces = 0
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                 });
 
                 // Configure logging to see what's happening
