@@ -22,18 +22,20 @@ The ADAM-6051 InfluxDB Logger connects to ADAM-6051 devices via Modbus TCP, read
 adam-6051-influxdb-logger/
 ├── README.md                    # This file - overview and getting started
 ├── CLAUDE.md                    # AI assistant development guidelines
-├── TESTING_PLAN.md             # Comprehensive testing strategy (C# only)
-├── adam-6051-influxdb-logger.md # Detailed technical documentation
-├── csharp/                     # C# implementation
-│   ├── Industrial.Adam.Logger.sln
-│   └── src/
-│       ├── Industrial.Adam.Logger/           # Main library
-│       ├── Industrial.Adam.Logger.Tests/     # Unit tests (183 tests)
-│       ├── Industrial.Adam.Logger.IntegrationTests/  # Integration tests
-│       └── Industrial.Adam.Logger.Examples/  # Usage examples
-└── python/                     # Python implementation
-    ├── adam_counter_logger.py  # Main application
-    └── adam_config_json.json   # Configuration example
+├── EXAMPLES.md                  # Comprehensive C# usage examples
+├── Industrial.Adam.Logger.sln   # Main C# solution
+├── src/                         # C# implementation (main)
+│   ├── Industrial.Adam.Logger/           # Core library with InfluxDB integration
+│   ├── Industrial.Adam.Logger.Tests/     # Unit tests (183 tests)
+│   ├── Industrial.Adam.Logger.IntegrationTests/  # Integration tests
+│   └── Industrial.Adam.Logger.Examples/  # Usage examples
+├── docs/                        # Documentation
+│   ├── adam-6051-influxdb-logger.md      # Technical documentation
+│   └── TESTING_PLAN.md                   # Testing strategy
+├── docker/                      # Docker deployment (InfluxDB + Grafana)
+└── python/                      # Python implementation (alternative)
+    ├── adam_counter_logger.py   # Lightweight Python version
+    └── adam_config_json.json    # Configuration example
 ```
 
 ## Quick Start
@@ -46,10 +48,9 @@ pip install pymodbus influxdb-client
 python adam_counter_logger.py
 ```
 
-### C# Implementation
+### C# Implementation (Primary)
 
 ```bash
-cd csharp/
 dotnet build
 dotnet run --project src/Industrial.Adam.Logger.Examples
 ```
@@ -62,8 +63,9 @@ dotnet run --project src/Industrial.Adam.Logger.Examples
 - **Cross-Platform**: Runs on Windows, Linux, and macOS
 - **Dependencies**: PyModbus, InfluxDB Client
 
-### C# Implementation
+### C# Implementation (Primary)
 - **Enterprise-Ready**: Full solution architecture with comprehensive testing
+- **InfluxDB Integration**: Native InfluxDB client with batching and retry logic
 - **Performance**: Optimized for high-throughput industrial environments
 - **Testing**: 183 unit and integration tests providing 100% coverage
 - **Architecture**: Clean Architecture with SOLID principles
@@ -132,15 +134,15 @@ The C# implementation includes comprehensive testing infrastructure:
 
 Run tests:
 ```bash
-cd csharp/
 dotnet test
 ```
 
 ## Documentation
 
 - **[README.md](README.md)**: This overview document
-- **[adam-6051-influxdb-logger.md](adam-6051-influxdb-logger.md)**: Detailed technical documentation
-- **[TESTING_PLAN.md](TESTING_PLAN.md)**: Comprehensive testing strategy
+- **[EXAMPLES.md](EXAMPLES.md)**: Comprehensive C# usage examples
+- **[docs/adam-6051-influxdb-logger.md](docs/adam-6051-influxdb-logger.md)**: Detailed technical documentation
+- **[docs/TESTING_PLAN.md](docs/TESTING_PLAN.md)**: Comprehensive testing strategy
 - **[CLAUDE.md](CLAUDE.md)**: Development guidelines and architectural principles
 
 ## Architecture Highlights
