@@ -84,6 +84,12 @@ public class Program
                 // Override configuration with environment variables after service registration
                 services.PostConfigure<AdamLoggerConfig>(config =>
                 {
+                    // In Docker (Production), clear existing devices and use only environment config
+                    if (Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") == "Production")
+                    {
+                        config.Devices.Clear();
+                    }
+                    
                     // Bind environment variables to configuration
                     context.Configuration.GetSection("AdamLogger").Bind(config);
                 });
