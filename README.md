@@ -63,17 +63,28 @@ docker-compose ps
 
 **The C# logger runs automatically in Docker! 🎉**
 
+### 🎮 **Demo Mode (No Hardware Required)**
 ```bash
-# 5. Configure your ADAM device IP (optional)
-echo "ADAM_HOST=192.168.1.100" > docker/.env
+# Start with mock data generation for testing/demo
+echo "DEMO_MODE=true" > docker/.env
+docker-compose up -d
+
+# View logs to see mock counter data being generated
+docker-compose logs -f adam-logger
+```
+
+### 🏭 **Production Mode (Real ADAM Device)**
+```bash
+# Configure for your actual ADAM-6051 device
+echo "DEMO_MODE=false" > docker/.env
+echo "ADAM_HOST=192.168.1.100" >> docker/.env
 echo "ADAM_UNIT_ID=1" >> docker/.env
 echo "POLL_INTERVAL=2000" >> docker/.env
 
-# 6. Restart with new configuration
-cd docker
+# Restart with real device configuration
 docker-compose restart adam-logger
 
-# 7. View C# logger logs
+# View logs to see real device data
 docker-compose logs -f adam-logger
 ```
 

@@ -23,25 +23,19 @@ public class Program
         var host = Host.CreateDefaultBuilder(args)
             .ConfigureServices((context, services) =>
             {
-                // Configure ADAM Logger with configuration binding from environment variables
-                services.Configure<AdamLoggerConfig>(context.Configuration.GetSection("AdamLogger"));
-                
-                // Add ADAM Logger service with post-configuration
+                // Add ADAM Logger service with clean configuration
                 services.AddAdamLogger(config =>
                 {
-                    // Set defaults that can be overridden by environment variables
+                    // Set sensible defaults
                     config.PollIntervalMs = 2000;
                     config.HealthCheckIntervalMs = 10000;
                     config.MaxConcurrentDevices = 1;
 
                     // Configure InfluxDB with environment-aware URL
-                    var influxUrl = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") == "Production" 
-                        ? "http://influxdb:8086"  // Docker service name
-                        : "http://localhost:8086"; // Local development
-                        
+                    var isProduction = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") == "Production";
                     config.InfluxDb = new InfluxDbConfig
                     {
-                        Url = influxUrl,
+                        Url = isProduction ? "http://influxdb:8086" : "http://localhost:8086",
                         Token = "adam-super-secret-token",
                         Organization = "adam_org",
                         Bucket = "adam_counters", 
@@ -50,9 +44,10 @@ public class Program
                         FlushIntervalMs = 5000
                     };
 
-                    // Add a demo device configuration only if not running in Docker
-                    if (Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") != "Production")
+                    // Add demo device for local development
+                    if (!isProduction)
                     {
+                        config.DemoMode = true;
                         config.Devices.Add(new AdamDeviceConfig
                         {
                             DeviceId = "DEMO_ADAM_001",
@@ -80,21 +75,14 @@ public class Program
                         });
                     }
                 });
-                
-                // Override configuration with environment variables after service registration
+
+                // Apply environment variable overrides (clean approach)
                 services.PostConfigure<AdamLoggerConfig>(config =>
                 {
-                    // In Docker (Production), clear existing devices and use only environment config
-                    if (Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") == "Production")
-                    {
-                        config.Devices.Clear();
-                    }
-                    
-                    // Bind environment variables to configuration
                     context.Configuration.GetSection("AdamLogger").Bind(config);
                 });
 
-                // Configure logging to see what's happening
+                // Configure logging
                 services.AddLogging(builder =>
                 {
                     builder.SetMinimumLevel(LogLevel.Information);

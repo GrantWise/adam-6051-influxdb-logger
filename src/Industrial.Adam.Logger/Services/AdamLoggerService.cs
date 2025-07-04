@@ -104,8 +104,21 @@ public class AdamLoggerService : IAdamLoggerService, IHostedService, IHealthChec
         // Initialize device managers for each configured device
         foreach (var deviceConfig in _config.Devices)
         {
-            var deviceLogger = _serviceProvider.GetRequiredService<ILogger<ModbusDeviceManager>>();
-            var manager = new ModbusDeviceManager(deviceConfig, deviceLogger);
+            IModbusDeviceManager manager;
+            
+            if (_config.DemoMode)
+            {
+                var mockLogger = _serviceProvider.GetRequiredService<ILogger<MockModbusDeviceManager>>();
+                manager = new MockModbusDeviceManager(deviceConfig, mockLogger);
+                _logger.LogInformation("Created mock device manager for {DeviceId} (Demo Mode)", deviceConfig.DeviceId);
+            }
+            else
+            {
+                var deviceLogger = _serviceProvider.GetRequiredService<ILogger<ModbusDeviceManager>>();
+                manager = new ModbusDeviceManager(deviceConfig, deviceLogger);
+                _logger.LogInformation("Created Modbus device manager for {DeviceId}", deviceConfig.DeviceId);
+            }
+            
             _deviceManagers[deviceConfig.DeviceId] = manager;
 
             // Initialize health status
@@ -385,8 +398,18 @@ public class AdamLoggerService : IAdamLoggerService, IHostedService, IHealthChec
             _logger.LogInformation("Adding device {DeviceId} at runtime", deviceConfig.DeviceId);
 
             // Create device manager using the same pattern as startup
-            var deviceLogger = _serviceProvider.GetRequiredService<ILogger<ModbusDeviceManager>>();
-            var deviceManager = new ModbusDeviceManager(deviceConfig, deviceLogger);
+            IModbusDeviceManager deviceManager;
+            
+            if (_config.DemoMode)
+            {
+                var mockLogger = _serviceProvider.GetRequiredService<ILogger<MockModbusDeviceManager>>();
+                deviceManager = new MockModbusDeviceManager(deviceConfig, mockLogger);
+            }
+            else
+            {
+                var deviceLogger = _serviceProvider.GetRequiredService<ILogger<ModbusDeviceManager>>();
+                deviceManager = new ModbusDeviceManager(deviceConfig, deviceLogger);
+            }
             
             // Add to device collections
             if (_deviceManagers.TryAdd(deviceConfig.DeviceId, deviceManager))
@@ -580,8 +603,18 @@ public class AdamLoggerService : IAdamLoggerService, IHostedService, IHealthChec
     private async Task AddDeviceInternalAsync(AdamDeviceConfig deviceConfig, AdamDeviceHealth? previousHealth = null)
     {
         // Create device manager using the same pattern as startup
-        var deviceLogger = _serviceProvider.GetRequiredService<ILogger<ModbusDeviceManager>>();
-        var deviceManager = new ModbusDeviceManager(deviceConfig, deviceLogger);
+        IModbusDeviceManager deviceManager;
+        
+        if (_config.DemoMode)
+        {
+            var mockLogger = _serviceProvider.GetRequiredService<ILogger<MockModbusDeviceManager>>();
+            deviceManager = new MockModbusDeviceManager(deviceConfig, mockLogger);
+        }
+        else
+        {
+            var deviceLogger = _serviceProvider.GetRequiredService<ILogger<ModbusDeviceManager>>();
+            deviceManager = new ModbusDeviceManager(deviceConfig, deviceLogger);
+        }
         
         // Add to device collections
         if (_deviceManagers.TryAdd(deviceConfig.DeviceId, deviceManager))

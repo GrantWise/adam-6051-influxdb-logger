@@ -95,6 +95,15 @@ public class AdamLoggerConfig
 
     #endregion
 
+    #region Demo and Testing Configuration
+
+    /// <summary>
+    /// Enable demo mode with mock data generation instead of real device communication
+    /// </summary>
+    public bool DemoMode { get; set; } = false;
+
+    #endregion
+
     #region InfluxDB Configuration
 
     /// <summary>

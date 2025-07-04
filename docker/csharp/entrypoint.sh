@@ -24,7 +24,7 @@ export "Logging__LogLevel__Industrial__Adam__Logger"="Debug"
 
 # Set ADAM device configuration via environment variables
 export AdamLogger__Devices__0__DeviceId="DOCKER_ADAM_001"
-export AdamLogger__Devices__0__IpAddress="modbus-simulator"  # Connect to simulator service
+export AdamLogger__Devices__0__IpAddress=${ADAM_HOST:-192.168.1.100}
 export AdamLogger__Devices__0__Port=502
 export AdamLogger__Devices__0__UnitId=${ADAM_UNIT_ID:-1}
 export AdamLogger__Devices__0__TimeoutMs=5000
@@ -43,6 +43,7 @@ export AdamLogger__Devices__0__Channels__0__MaxValue=4294967295
 export AdamLogger__PollIntervalMs=${POLL_INTERVAL:-2000}
 export AdamLogger__HealthCheckIntervalMs=30000
 export AdamLogger__MaxConcurrentDevices=1
+export AdamLogger__DemoMode=${DEMO_MODE:-false}
 
 # Configure InfluxDB connection
 export AdamLogger__InfluxDb__Url="http://influxdb:8086"
