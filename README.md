@@ -40,7 +40,46 @@ adam-6051-influxdb-logger/
 
 ## Quick Start
 
-### Python Implementation
+### 🐳 Docker Deployment (Recommended)
+
+**Complete monitoring stack with InfluxDB + Grafana:**
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/GrantWise/adam-6051-counter-logger.git
+cd adam-6051-counter-logger
+
+# 2. Start the monitoring infrastructure
+cd docker
+docker-compose up -d
+
+# 3. Verify services are running
+docker-compose ps
+
+# 4. Access the dashboards
+# - Grafana: http://localhost:3000 (admin/admin)
+# - InfluxDB: http://localhost:8086 (admin/admin123)
+```
+
+**The C# logger runs automatically in Docker! 🎉**
+
+```bash
+# 5. Configure your ADAM device IP (optional)
+echo "ADAM_HOST=192.168.1.100" > docker/.env
+echo "ADAM_UNIT_ID=1" >> docker/.env
+echo "POLL_INTERVAL=2000" >> docker/.env
+
+# 6. Restart with new configuration
+cd docker
+docker-compose restart adam-logger
+
+# 7. View C# logger logs
+docker-compose logs -f adam-logger
+```
+
+### 💻 Local Development
+
+#### Python Implementation
 
 ```bash
 cd python/
@@ -48,7 +87,7 @@ pip install pymodbus influxdb-client
 python adam_counter_logger.py
 ```
 
-### C# Implementation (Primary)
+#### C# Implementation (Primary)
 
 ```bash
 dotnet build
@@ -101,6 +140,160 @@ Both implementations use JSON configuration files with identical schema:
   }
 }
 ```
+
+## 🐳 Docker Deployment
+
+### Prerequisites
+
+- Docker and Docker Compose installed
+- ADAM-6051 device accessible on your network
+- Ports 3000 (Grafana) and 8086 (InfluxDB) available
+
+### Infrastructure Components
+
+The Docker stack includes:
+
+- **InfluxDB 2.7**: Time-series database for counter data storage
+- **Grafana 12.0**: Real-time dashboard and visualization  
+- **ADAM Logger**: C# .NET 8 application with InfluxDB integration
+
+### Setup Instructions
+
+1. **Clone and Navigate:**
+   ```bash
+   git clone https://github.com/GrantWise/adam-6051-counter-logger.git
+   cd adam-6051-counter-logger/docker
+   ```
+
+2. **Configure Environment (Optional):**
+   ```bash
+   # Create environment file for custom settings
+   cp .env.template .env
+   
+   # Edit with your device settings
+   echo "ADAM_HOST=192.168.1.100" >> .env
+   echo "ADAM_UNIT_ID=1" >> .env
+   echo "POLL_INTERVAL=5.0" >> .env
+   ```
+
+3. **Start the Stack:**
+   ```bash
+   # Start all services
+   docker-compose up -d
+   
+   # View logs
+   docker-compose logs -f
+   
+   # Check service status
+   docker-compose ps
+   ```
+
+4. **Access Services:**
+   - **Grafana Dashboard**: http://localhost:3000
+     - Username: `admin`
+     - Password: `admin`
+   - **InfluxDB Console**: http://localhost:8086
+     - Username: `admin`
+     - Password: `admin123`
+     - Organization: `adam_org`
+     - Bucket: `adam_counters`
+
+### Data Flow
+
+```
+ADAM-6051 Device → C# Logger (Docker) → InfluxDB → Grafana Dashboard
+                       ↓                    ↓
+              Modbus TCP/502        Time-series DB
+                                   adam_counters
+                      
+              Real-time monitoring with:
+              • Counter values & rates
+              • Device health status  
+              • System performance metrics
+              • Data quality indicators
+```
+
+### Configuration
+
+The Docker stack automatically configures the C# logger via environment variables:
+
+```bash
+# Device configuration
+ADAM_HOST=192.168.1.100        # Your ADAM device IP
+ADAM_UNIT_ID=1                 # Modbus unit ID  
+POLL_INTERVAL=2000             # Polling interval in ms
+LOG_LEVEL=Information          # Logging level
+
+# InfluxDB connection (auto-configured)
+# - URL: http://influxdb:8086
+# - Token: adam-super-secret-token
+# - Organization: adam_org
+# - Bucket: adam_counters
+```
+
+**For external C# applications**, use this configuration:
+
+```csharp
+config.InfluxDb = new InfluxDbConfig
+{
+    Url = "http://localhost:8086",
+    Token = "adam-super-secret-token",
+    Organization = "adam_org",
+    Bucket = "adam_counters", 
+    Measurement = "counter_data"
+};
+```
+
+### Docker Commands
+
+```bash
+# Start services
+docker-compose up -d
+
+# Stop services  
+docker-compose down
+
+# View logs
+docker-compose logs grafana
+docker-compose logs influxdb
+
+# Restart a service
+docker-compose restart adam-logger
+
+# Update and rebuild
+docker-compose pull && docker-compose up -d
+```
+
+### Troubleshooting
+
+**Services won't start:**
+```bash
+# Check port conflicts
+netstat -tulpn | grep -E ':(3000|8086)'
+
+# View detailed logs
+docker-compose logs
+```
+
+**Can't connect to ADAM device:**
+```bash
+# Test network connectivity
+docker-compose exec adam-logger ping 192.168.1.100
+
+# Check device configuration
+docker-compose exec adam-logger cat /app/config/adam_config.json
+```
+
+**Dashboard shows no data:**
+1. Verify InfluxDB has data: http://localhost:8086/orgs/adam_org/data-explorer
+2. Check C# logger is writing to InfluxDB
+3. Verify Grafana datasource connection
+
+### Persistent Data
+
+Data is automatically persisted in Docker volumes:
+- `influxdb_data`: Time-series data storage
+- `grafana_data`: Dashboard configurations and user settings
 
 ## Key Capabilities
 
