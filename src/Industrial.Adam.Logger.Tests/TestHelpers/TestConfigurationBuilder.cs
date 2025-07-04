@@ -136,6 +136,9 @@ public static class TestConfigurationBuilder
             EnablePerformanceCounters = true,
             EnableDetailedLogging = false,
             
+            // Use demo mode for tests to avoid requiring real devices
+            DemoMode = true,
+            
             // Devices collection
             Devices = new List<AdamDeviceConfig>()
         };

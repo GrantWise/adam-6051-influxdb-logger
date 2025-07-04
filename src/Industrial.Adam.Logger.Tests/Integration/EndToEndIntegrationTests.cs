@@ -191,7 +191,8 @@ public class EndToEndIntegrationTests : IDisposable
         _services.AddAdamLogger(cfg =>
         {
             cfg.PollIntervalMs = config.PollIntervalMs;
-            cfg.HealthCheckIntervalMs = 500; // Fast health checks
+            cfg.HealthCheckIntervalMs = 5000; // Minimum allowed health check interval
+            cfg.DemoMode = true; // Use demo mode for tests
             cfg.Devices.AddRange(config.Devices);
         });
 
@@ -260,9 +261,10 @@ public class EndToEndIntegrationTests : IDisposable
         var config = new AdamLoggerConfig
         {
             PollIntervalMs = 500,
-            HealthCheckIntervalMs = 1000,
+            HealthCheckIntervalMs = 5000, // Minimum allowed value
             MaxConsecutiveFailures = 3,
             EnableAutomaticRecovery = true,
+            DemoMode = true, // Use demo mode for tests
             Devices = new List<AdamDeviceConfig>
             {
                 new()
@@ -317,8 +319,9 @@ public class EndToEndIntegrationTests : IDisposable
         return new AdamLoggerConfig
         {
             PollIntervalMs = 800,
-            HealthCheckIntervalMs = 2000,
+            HealthCheckIntervalMs = 5000, // Minimum allowed value
             MaxConcurrentDevices = 1,
+            DemoMode = true, // Use demo mode for tests
             Devices = new List<AdamDeviceConfig>
             {
                 new()
@@ -372,9 +375,10 @@ public class EndToEndIntegrationTests : IDisposable
         return new AdamLoggerConfig
         {
             PollIntervalMs = 2000,
-            HealthCheckIntervalMs = 3000,
+            HealthCheckIntervalMs = 5000, // Minimum allowed value
             MaxConcurrentDevices = 3,
             EnablePerformanceCounters = true,
+            DemoMode = true, // Use demo mode for tests
             Devices = new List<AdamDeviceConfig>
             {
                 new()
