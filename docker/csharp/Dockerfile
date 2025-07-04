@@ -9,9 +9,11 @@ WORKDIR /src
 COPY Industrial.Adam.Logger.sln ./
 COPY src/Industrial.Adam.Logger/Industrial.Adam.Logger.csproj ./src/Industrial.Adam.Logger/
 COPY src/Industrial.Adam.Logger.Examples/Industrial.Adam.Logger.Examples.csproj ./src/Industrial.Adam.Logger.Examples/
+COPY src/Industrial.Adam.Logger.Tests/Industrial.Adam.Logger.Tests.csproj ./src/Industrial.Adam.Logger.Tests/
+COPY src/Industrial.Adam.Logger.IntegrationTests/Industrial.Adam.Logger.IntegrationTests.csproj ./src/Industrial.Adam.Logger.IntegrationTests/
 
-# Restore dependencies
-RUN dotnet restore ./src/Industrial.Adam.Logger.Examples/Industrial.Adam.Logger.Examples.csproj
+# Restore dependencies for the solution
+RUN dotnet restore Industrial.Adam.Logger.sln
 
 # Copy source code
 COPY src/ ./src/
