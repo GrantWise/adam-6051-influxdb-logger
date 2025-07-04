@@ -22,35 +22,40 @@ public class Program
         var host = Host.CreateDefaultBuilder(args)
             .ConfigureServices((context, services) =>
             {
-                // Configure ADAM Logger with a simple device
+                // Configure ADAM Logger with configuration binding from environment variables
+                services.Configure<AdamLoggerConfig>(context.Configuration.GetSection("AdamLogger"));
+                
+                // Add ADAM Logger service with post-configuration
                 services.AddAdamLogger(config =>
                 {
-                    config.PollIntervalMs = 2000;  // Poll every 2 seconds
-                    config.HealthCheckIntervalMs = 10000;  // Health check every 10 seconds
+                    // Set defaults that can be overridden by environment variables
+                    config.PollIntervalMs = 2000;
+                    config.HealthCheckIntervalMs = 10000;
                     config.MaxConcurrentDevices = 1;
 
-                    // Configure InfluxDB (optional - comment out if not using InfluxDB)
+                    // Configure InfluxDB with environment-aware URL
+                    var influxUrl = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") == "Production" 
+                        ? "http://influxdb:8086"  // Docker service name
+                        : "http://localhost:8086"; // Local development
+                        
                     config.InfluxDb = new InfluxDbConfig
                     {
-                        Url = "http://localhost:8086",
-                        Token = "adam-super-secret-token",  // Matches docker setup
-                        Organization = "adam_org",          // Matches docker setup  
-                        Bucket = "adam_counters",           // Matches docker setup
-                        Measurement = "counter_data",       // Matches Grafana dashboard
+                        Url = influxUrl,
+                        Token = "adam-super-secret-token",
+                        Organization = "adam_org",
+                        Bucket = "adam_counters", 
+                        Measurement = "counter_data",
                         WriteBatchSize = 50,
                         FlushIntervalMs = 5000
                     };
 
                     // Add a demo device configuration only if not running in Docker
-                    // Docker configuration is handled via environment variables
                     if (Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") != "Production")
                     {
-                        // Note: This will attempt to connect to 127.0.0.1:502
-                        // You may need to run a Modbus simulator or change the IP
                         config.Devices.Add(new AdamDeviceConfig
                         {
                             DeviceId = "DEMO_ADAM_001",
-                            IpAddress = "127.0.0.1", // Localhost - change to your device IP
+                            IpAddress = "127.0.0.1",
                             Port = 502,
                             UnitId = 1,
                             TimeoutMs = 2000,
@@ -62,7 +67,7 @@ public class Program
                                     ChannelNumber = 0,
                                     Name = "DemoCounter",
                                     StartRegister = 0,
-                                    RegisterCount = 2, // 32-bit counter
+                                    RegisterCount = 2,
                                     Enabled = true,
                                     MinValue = 0,
                                     MaxValue = 4294967295,
@@ -73,6 +78,13 @@ public class Program
                             }
                         });
                     }
+                });
+                
+                // Override configuration with environment variables after service registration
+                services.PostConfigure<AdamLoggerConfig>(config =>
+                {
+                    // Bind environment variables to configuration
+                    context.Configuration.GetSection("AdamLogger").Bind(config);
                 });
 
                 // Configure logging to see what's happening
