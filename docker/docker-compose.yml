@@ -50,6 +50,23 @@ services:
       timeout: 10s
       retries: 5
 
+  # Modbus TCP Simulator for testing
+  modbus-simulator:
+    build:
+      context: ./modbus-simulator
+      dockerfile: Dockerfile
+    container_name: adam-modbus-simulator
+    restart: unless-stopped
+    ports:
+      - "502:502"
+    networks:
+      - adam_network
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import socket; s=socket.socket(); s.connect((\"localhost\", 502)); s.close()' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   # ADAM Counter Logger - C# application
   adam-logger:
     build:
@@ -68,6 +85,8 @@ services:
       - ./logs:/app/logs
     depends_on:
       influxdb:
+        condition: service_healthy
+      modbus-simulator:
         condition: service_healthy
     networks:
       - adam_network

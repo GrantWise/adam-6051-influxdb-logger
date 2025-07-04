@@ -24,7 +24,7 @@ export "Logging__LogLevel__Industrial__Adam__Logger"="Debug"
 
 # Set ADAM device configuration via environment variables
 export AdamLogger__Devices__0__DeviceId="DOCKER_ADAM_001"
-export AdamLogger__Devices__0__IpAddress=${ADAM_HOST:-192.168.1.100}
+export AdamLogger__Devices__0__IpAddress="modbus-simulator"  # Connect to simulator service
 export AdamLogger__Devices__0__Port=502
 export AdamLogger__Devices__0__UnitId=${ADAM_UNIT_ID:-1}
 export AdamLogger__Devices__0__TimeoutMs=5000
