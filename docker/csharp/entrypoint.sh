@@ -19,8 +19,8 @@ done
 echo "InfluxDB is ready!"
 
 # Set logging configuration
-export Logging__LogLevel__Default=${LOG_LEVEL:-Information}
-export Logging__LogLevel__Industrial.Adam.Logger=Debug
+export "Logging__LogLevel__Default"=${LOG_LEVEL:-Information}
+export "Logging__LogLevel__Industrial__Adam__Logger"="Debug"
 
 # Set ADAM device configuration via environment variables
 export AdamLogger__Devices__0__DeviceId="DOCKER_ADAM_001"
@@ -55,5 +55,10 @@ export AdamLogger__InfluxDb__FlushIntervalMs=5000
 
 echo "Starting application with configuration applied..."
 
+# Debug: Show all environment variables starting with AdamLogger
+echo "Environment variables:"
+env | grep -E "(AdamLogger|Logging)" | sort
+
 # Start the application
+echo "Executing: dotnet Industrial.Adam.Logger.Examples.dll"
 exec dotnet Industrial.Adam.Logger.Examples.dll "$@"
