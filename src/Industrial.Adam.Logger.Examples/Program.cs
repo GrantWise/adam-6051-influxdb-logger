@@ -5,6 +5,7 @@
 using Industrial.Adam.Logger.Configuration;
 using Industrial.Adam.Logger.Extensions;
 using Industrial.Adam.Logger.Interfaces;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
