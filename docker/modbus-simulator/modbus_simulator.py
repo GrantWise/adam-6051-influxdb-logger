@@ -69,8 +69,7 @@ def main():
     StartTcpServer(
         context=context, 
         identity=identity, 
-        address=("0.0.0.0", 502),
-        allow_reuse_address=True
+        address=("0.0.0.0", 502)
     )
 
 if __name__ == "__main__":

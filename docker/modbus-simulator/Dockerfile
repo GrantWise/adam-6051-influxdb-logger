@@ -3,8 +3,8 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install required packages
-RUN pip install pymodbus
+# Install required packages with specific version
+RUN pip install pymodbus==3.5.4
 
 # Copy simulator script
 COPY modbus_simulator.py .
