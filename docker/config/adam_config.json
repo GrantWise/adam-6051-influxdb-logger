@@ -10,7 +10,7 @@
         "retry_delay": 1.0
     },
     "influxdb": {
-        "url": "http://localhost:8086",
+        "url": "http://influxdb:8086",
         "token": "adam-super-secret-token",
         "org": "adam_org",
         "bucket": "adam_counters",
@@ -20,7 +20,7 @@
     "logging": {
         "poll_interval": 5.0,
         "log_level": "INFO",
-        "log_file": "adam_logger.log",
+        "log_file": "/app/logs/adam_logger.log",
         "max_log_size_mb": 10,
         "backup_count": 5
     },

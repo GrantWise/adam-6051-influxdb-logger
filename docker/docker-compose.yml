@@ -1,0 +1,95 @@
+services:
+  # InfluxDB - Time series database for counter data
+  influxdb:
+    image: influxdb:2.7.12
+    container_name: adam-influxdb
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin123
+      - DOCKER_INFLUXDB_INIT_ORG=adam_org
+      - DOCKER_INFLUXDB_INIT_BUCKET=adam_counters
+      - DOCKER_INFLUXDB_INIT_RETENTION=365d
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=adam-super-secret-token
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+      - ./influxdb/init:/docker-entrypoint-initdb.d
+    networks:
+      - adam_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Grafana - Visualization dashboard
+  grafana:
+    image: grafana/grafana:12.0.2
+    container_name: adam-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - influxdb
+    networks:
+      - adam_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ADAM Counter Logger - C# application
+  adam-logger:
+    build:
+      context: ..
+      dockerfile: docker/csharp/Dockerfile
+    container_name: adam-counter-logger
+    restart: unless-stopped
+    environment:
+      # Override ADAM device IP via environment variable
+      - ADAM_HOST=${ADAM_HOST:-192.168.1.100}
+      - ADAM_UNIT_ID=${ADAM_UNIT_ID:-1}
+      - LOG_LEVEL=${LOG_LEVEL:-Information}
+      - POLL_INTERVAL=${POLL_INTERVAL:-2000}
+      - DEMO_MODE=${DEMO_MODE:-false}
+    volumes:
+      - ./config:/app/config
+      - ./logs:/app/logs
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    networks:
+      - adam_network
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f dotnet || exit 1"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      start_period: 60s
+
+# Persistent volumes for data storage
+volumes:
+  influxdb_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+# Internal network for service communication
+networks:
+  adam_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

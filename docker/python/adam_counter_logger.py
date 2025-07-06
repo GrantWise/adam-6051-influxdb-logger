@@ -49,13 +49,10 @@ class ConfigManager:
             "retry_delay": 1.0
         },
         "influxdb": {
-            "host": "localhost",
-            "port": 8086,
-            "username": "",
-            "password": "",
-            "database": "adam_counters",
-            "ssl": False,
-            "verify_ssl": False,
+            "url": "http://localhost:8086",
+            "token": "adam-super-secret-token",
+            "org": "adam_org",
+            "bucket": "adam_counters",
             "timeout": 5,
             "retries": 3
         },
@@ -250,75 +247,76 @@ class ModbusManager:
 
 
 class InfluxDBManager:
-    """Manages InfluxDB connection and data writing"""
+    """Manages InfluxDB 2.x connection and data writing"""
     
     def __init__(self, config: Dict[str, Any]):
         self.config = config['influxdb']
         self.client = None
+        self.write_api = None
         self.logger = logging.getLogger(__name__)
         self._connect()
     
     def _connect(self):
-        """Connect to InfluxDB"""
+        """Connect to InfluxDB 2.x"""
         try:
             self.client = InfluxDBClient(
-                host=self.config['host'],
-                port=self.config['port'],
-                username=self.config['username'] or None,
-                password=self.config['password'] or None,
-                database=self.config['database'],
-                ssl=self.config['ssl'],
-                verify_ssl=self.config['verify_ssl'],
-                timeout=self.config['timeout']
+                url=self.config['url'],
+                token=self.config['token'],
+                org=self.config['org'],
+                timeout=self.config['timeout'] * 1000  # Convert to milliseconds
             )
             
-            # Create database if it doesn't exist
-            self.client.create_database(self.config['database'])
-            self.logger.info(f"Connected to InfluxDB database: {self.config['database']}")
+            # Initialize write API
+            self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
+            
+            # Test connection by checking bucket exists
+            buckets_api = self.client.buckets_api()
+            bucket = buckets_api.find_bucket_by_name(self.config['bucket'])
+            if bucket:
+                self.logger.info(f"Connected to InfluxDB 2.x bucket: {self.config['bucket']}")
+            else:
+                self.logger.warning(f"Bucket {self.config['bucket']} not found, but connection established")
             
         except Exception as e:
-            self.logger.error(f"Failed to connect to InfluxDB: {e}")
+            self.logger.error(f"Failed to connect to InfluxDB 2.x: {e}")
             self.client = None
+            self.write_api = None
     
     def write_counter_data(self, readings: list, device_config: Dict[str, Any]) -> bool:
-        """Write counter readings to InfluxDB with retry logic"""
-        if not self.client:
+        """Write counter readings to InfluxDB 2.x with retry logic"""
+        if not self.client or not self.write_api:
             self._connect()
-            if not self.client:
+            if not self.client or not self.write_api:
                 return False
         
         try:
             data_points = []
             for reading in readings:
-                point = {
-                    "measurement": "counter_data",
-                    "tags": {
-                        "device": device_config['name'],
-                        "location": device_config['location'],
-                        "channel": str(reading.channel)
-                    },
-                    "time": reading.timestamp.isoformat(),
-                    "fields": {
-                        "count": reading.count
-                    }
-                }
+                # Create Point object for InfluxDB 2.x
+                point = Point("counter_data") \
+                    .tag("device", device_config['name']) \
+                    .tag("location", device_config['location']) \
+                    .tag("channel", str(reading.channel)) \
+                    .field("count", reading.count) \
+                    .time(reading.timestamp)
                 
                 # Add rate if available
                 if reading.rate is not None:
-                    point["fields"]["rate"] = reading.rate
+                    point = point.field("rate", reading.rate)
                 
                 data_points.append(point)
             
             for attempt in range(self.config['retries'] + 1):
                 try:
-                    success = self.client.write_points(data_points)
-                    if success:
-                        self.logger.debug(f"Successfully wrote {len(data_points)} data points")
-                        return True
-                    else:
-                        raise InfluxDBError("Write operation returned False")
+                    self.write_api.write(
+                        bucket=self.config['bucket'],
+                        org=self.config['org'],
+                        record=data_points
+                    )
+                    self.logger.debug(f"Successfully wrote {len(data_points)} data points to InfluxDB 2.x")
+                    return True
                         
-                except InfluxDBError as e:
+                except ApiException as e:
                     self.logger.warning(f"InfluxDB write attempt {attempt + 1} failed: {e}")
                     if attempt < self.config['retries']:
                         time.sleep(1)
@@ -328,7 +326,7 @@ class InfluxDBManager:
                         return False
             
         except Exception as e:
-            self.logger.error(f"Unexpected error writing to InfluxDB: {e}")
+            self.logger.error(f"Unexpected error writing to InfluxDB 2.x: {e}")
             return False
         
         return False
