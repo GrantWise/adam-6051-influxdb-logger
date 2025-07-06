@@ -35,31 +35,32 @@ internal class MockModbusDeviceManager : IModbusDeviceManager
         _logger.LogInformation("Mock Modbus device manager created for {DeviceId}", DeviceId);
     }
 
-    public Task<bool> ConnectAsync(CancellationToken cancellationToken = default)
+    public async Task<bool> ConnectAsync(CancellationToken cancellationToken = default)
     {
         if (_disposed)
-            return Task.FromResult(false);
+            return false;
 
         // Simulate connection delay
-        Task.Delay(100, cancellationToken);
+        await Task.Delay(100, cancellationToken);
         
         IsConnected = true;
         _logger.LogInformation("Mock connection established to device {DeviceId}", DeviceId);
-        return Task.FromResult(true);
+        return true;
     }
 
-    public Task<ModbusReadResult> ReadRegistersAsync(ushort startAddress, ushort count, CancellationToken cancellationToken = default)
+    public async Task<ModbusReadResult> ReadRegistersAsync(ushort startAddress, ushort count, CancellationToken cancellationToken = default)
     {
         if (_disposed)
         {
             var error = new ObjectDisposedException(nameof(MockModbusDeviceManager));
-            return Task.FromResult(ModbusReadResult.CreateFailure(error, TimeSpan.Zero));
+            return ModbusReadResult.CreateFailure(error, TimeSpan.Zero);
         }
 
-        if (!IsConnected)
+        // Auto-connect if not connected (same behavior as real ModbusDeviceManager)
+        if (!IsConnected && !await ConnectAsync(cancellationToken))
         {
             var error = new InvalidOperationException("Device not connected");
-            return Task.FromResult(ModbusReadResult.CreateFailure(error, TimeSpan.Zero));
+            return ModbusReadResult.CreateFailure(error, TimeSpan.Zero);
         }
 
         var stopwatch = Stopwatch.StartNew();
@@ -67,7 +68,7 @@ internal class MockModbusDeviceManager : IModbusDeviceManager
         try
         {
             // Simulate realistic read delay
-            Task.Delay(_random.Next(10, 50), cancellationToken);
+            await Task.Delay(_random.Next(10, 50), cancellationToken);
 
             // Update counter based on time elapsed (simulate production counting)
             var now = DateTime.UtcNow;
@@ -99,13 +100,13 @@ internal class MockModbusDeviceManager : IModbusDeviceManager
             }
 
             stopwatch.Stop();
-            return Task.FromResult(ModbusReadResult.CreateSuccess(data, stopwatch.Elapsed));
+            return ModbusReadResult.CreateSuccess(data, stopwatch.Elapsed);
         }
         catch (Exception ex)
         {
             stopwatch.Stop();
             _logger.LogError(ex, "Mock read operation failed for device {DeviceId}", DeviceId);
-            return Task.FromResult(ModbusReadResult.CreateFailure(ex, stopwatch.Elapsed));
+            return ModbusReadResult.CreateFailure(ex, stopwatch.Elapsed);
         }
     }
 

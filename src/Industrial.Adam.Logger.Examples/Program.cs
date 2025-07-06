@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.Collections;
 
 namespace Industrial.Adam.Logger.Examples;
 
@@ -80,6 +81,37 @@ public class Program
                 services.PostConfigure<AdamLoggerConfig>(config =>
                 {
                     context.Configuration.GetSection("AdamLogger").Bind(config);
+                    
+                    // If demo mode is enabled via environment variable, clear any real devices and add demo device
+                    if (config.DemoMode && !config.Devices.Any(d => d.DeviceId.StartsWith("DEMO_")))
+                    {
+                        config.Devices.Clear();
+                        config.Devices.Add(new AdamDeviceConfig
+                        {
+                            DeviceId = "DEMO_ADAM_001",
+                            IpAddress = "127.0.0.1",
+                            Port = 502,
+                            UnitId = 1,
+                            TimeoutMs = 2000,
+                            MaxRetries = 1,
+                            Channels = new List<ChannelConfig>
+                            {
+                                new()
+                                {
+                                    ChannelNumber = 0,
+                                    Name = "DemoCounter",
+                                    StartRegister = 0,
+                                    RegisterCount = 2,
+                                    Enabled = true,
+                                    MinValue = 0,
+                                    MaxValue = 4294967295,
+                                    ScaleFactor = 1.0,
+                                    Offset = 0.0,
+                                    DecimalPlaces = 0
+                                }
+                            }
+                        });
+                    }
                 });
 
                 // Configure logging
