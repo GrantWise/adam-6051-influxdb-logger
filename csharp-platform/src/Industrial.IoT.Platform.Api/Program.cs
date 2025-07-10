@@ -26,6 +26,11 @@ builder.Services.AddSwaggerGen(c =>
         {
             Name = "Industrial IoT Platform",
             Email = "support@industrial-iot.com"
+        },
+        License = new OpenApiLicense
+        {
+            Name = "MIT License",
+            Url = new Uri("https://opensource.org/licenses/MIT")
         }
     });
     
@@ -39,6 +44,8 @@ builder.Services.AddSwaggerGen(c =>
     
     // Add response examples and better documentation
     c.EnableAnnotations();
+    
+    // Add custom documentation filter
     c.DocumentFilter<ApiDocumentationFilter>();
 });
 
@@ -107,9 +114,9 @@ app.UseCors("AllowWebClients");
 // Add security headers
 app.Use(async (context, next) =>
 {
-    context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
-    context.Response.Headers.Add("X-Frame-Options", "DENY");
-    context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Append("X-Frame-Options", "DENY");
+    context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
     await next();
 });
 
@@ -175,17 +182,17 @@ public class ApiDocumentationFilter : Swashbuckle.AspNetCore.SwaggerGen.IDocumen
     public void Apply(OpenApiDocument swaggerDoc, Swashbuckle.AspNetCore.SwaggerGen.DocumentFilterContext context)
     {
         // Add custom documentation enhancements
-        swaggerDoc.Info.License = new OpenApiLicense
-        {
-            Name = "MIT License",
-            Url = new Uri("https://opensource.org/licenses/MIT")
-        };
+        // swaggerDoc.Info.License = new OpenApiLicense
+        // {
+        //     Name = "MIT License",
+        //     Url = new Uri("https://opensource.org/licenses/MIT")
+        // };
         
         // Add server information
         swaggerDoc.Servers = new List<OpenApiServer>
         {
-            new() { Url = "https://localhost:7000", Description = "Development HTTPS" },
-            new() { Url = "http://localhost:5000", Description = "Development HTTP" }
+            new() { Url = "https://localhost:7072", Description = "Development HTTPS" },
+            new() { Url = "http://localhost:5053", Description = "Development HTTP" }
         };
         
         // Add tags for better organization
